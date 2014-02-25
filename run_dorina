@@ -1,0 +1,57 @@
+#!/usr/bin/env python
+# vim: set fileencoding=utf-8 :
+
+import sys
+import logging
+import argparse
+from dorina.config import load_config, set_config
+
+def main():
+    parser = argparse.ArgumentParser(description="Run doRiNA from the command line")
+    parser.add_argument('-d', '--debug', dest='debug',
+                        action='store_true', default=False,
+                        help="print debugging information to stderr")
+    parser.add_argument('-v', '--verbose', dest='verbose',
+                        action='store_true', default=False,
+                        help="print verbose status information to stderr")
+    parser.add_argument('--list-genomes', dest='list_genomes',
+                        action='store_true', default=False,
+                        help="print a list of available genomes and exit")
+    parser.add_argument('--list-regulators', dest='list_regulators',
+                        action='store_true', default=False,
+                        help="print a list of available regulators and exit")
+
+    options = parser.parse_args()
+
+    setup_logging(options)
+
+    load_config(options)
+    set_config(options)
+
+    if options.list_genomes:
+        logging.error('Listing genomes not implemented yet')
+        sys.exit(1)
+
+    if options.list_regulators:
+        logging.error('Listing regulators not implemented yet')
+        sys.exit(1)
+
+    logging.error("This program doesn't do anything yet")
+    sys.exit(1)
+
+
+def setup_logging(options):
+    """Set up the logging output"""
+    if options.debug:
+        log_level = logging.DEBUG
+    elif options.verbose:
+        log_level = logging.INFO
+    else:
+        log_level = logging.WARNING
+
+    logging.basicConfig(format="%(levelname)s: %(message)s",
+                        level=log_level)
+
+
+if __name__ == "__main__":
+    main()
