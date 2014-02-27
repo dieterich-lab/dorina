@@ -5,6 +5,7 @@ import sys
 import logging
 import argparse
 from dorina.config import load_config, set_config
+from dorina import utils
 
 def main():
     parser = argparse.ArgumentParser(description="Run doRiNA from the command line")
@@ -29,8 +30,21 @@ def main():
     set_config(options)
 
     if options.list_genomes:
-        logging.error('Listing genomes not implemented yet')
-        sys.exit(1)
+        genomes = utils.get_genomes()
+        print "Available genomes:"
+        print "------------------"
+        for clade, clade_dict in genomes.items():
+            print "%s" % clade
+            for species, species_dict in clade_dict.items():
+                print "\t%s" % species
+                for assembly, assembly_dict in species_dict.items():
+                    print "\t\t%s" % assembly
+                    gffs = assembly_dict.items()
+                    gffs.sort(key=lambda x: x[0])
+                    for gff in gffs:
+                        print "\t\t\t%s: %s" % gff
+
+        sys.exit(0)
 
     if options.list_regulators:
         logging.error('Listing regulators not implemented yet')
