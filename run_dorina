@@ -57,6 +57,7 @@ def main():
             for name, data in items:
                 print "\t%s" % name
                 print "\t\t%summary" % data['summary']
+        sys.exit(0)
 
 
     logging.error("This program doesn't do anything yet")
