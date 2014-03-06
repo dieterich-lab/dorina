@@ -1,0 +1,16 @@
+{
+    "summary": "Experimental summary",
+    "description": "Long description here",
+    "methods": "Experimental methods section",
+    "credits": "Credits",
+    "references": [{
+        "title": "A very important publication",
+        "authors": [
+            "Jules Verne",
+            "Orson Wells"
+        ],
+        "pages": "23-42",
+        "journal": "Annals of Science Fiction",
+        "year": "1870"
+    }]
+}

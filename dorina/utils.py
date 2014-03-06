@@ -2,6 +2,7 @@
 
 import logging
 import os
+import json
 from os import path
 from dorina import config
 
@@ -49,3 +50,51 @@ def get_genomes():
                         assembly_dict[root] = True
 
     return genomes
+
+
+def get_regulators():
+    """Get all available regulators"""
+    options = config.get_config()
+    regulators = {}
+
+    root = path.join(options.data.path, 'regulators')
+    for regulator in os.listdir(root):
+        regulator_path = path.join(root, regulator)
+        if not path.isdir(regulator_path):
+            logging.debug("skipping non-dir %r" % regulator_path)
+            continue
+
+        regulator_dict = {}
+        regulators[regulator] = regulator_dict
+
+        for experiment in os.listdir(regulator_path):
+            experiment_path = path.join(regulator_path, experiment)
+            if not path.isfile(experiment_path):
+                logging.debug("skipping non-file %r" % experiment_path)
+                continue
+
+            experiment_root, experiment_ext = path.splitext(experiment)
+            if not experiment_ext.lower() == '.json':
+                logging.debug("skipping non-JSON file %r" % experiment_path)
+                continue
+
+            bedfile = path.join(regulator_path, '%s.%s' % (experiment_root, 'bed'))
+            logging.debug("looking for %r" % bedfile)
+            if not path.isfile(bedfile):
+                logging.debug("No bedfile for experiment %r" % experiment_path)
+                continue
+
+            experiment_dict = parse_experiment(experiment_path)
+            regulator_dict[experiment_root] = experiment_dict
+
+    return regulators
+
+
+def parse_experiment(filename):
+    """Parse experimental description from a file name"""
+    logging.debug("Parsing experimental description from %r" % filename)
+    experiment = {}
+    with open(filename, 'r') as fh:
+        experiment = json.load(fh)
+
+    return experiment

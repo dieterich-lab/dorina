@@ -47,8 +47,17 @@ def main():
         sys.exit(0)
 
     if options.list_regulators:
-        logging.error('Listing regulators not implemented yet')
-        sys.exit(1)
+        regulators = utils.get_regulators()
+        print "Available regulators:"
+        print "---------------------"
+        for regulator, regulator_dict in regulators.items():
+            print "%s" % regulator
+            items = regulator_dict.items()
+            items.sort(key=lambda x: x[0])
+            for name, data in items:
+                print "\t%s" % name
+                print "\t\t%summary" % data['summary']
+
 
     logging.error("This program doesn't do anything yet")
     sys.exit(1)
