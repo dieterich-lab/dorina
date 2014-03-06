@@ -9,6 +9,28 @@ from dorina import utils
 
 def main():
     parser = argparse.ArgumentParser(description="Run doRiNA from the command line")
+    parser.add_argument('--genome', dest='genome',
+                        help="genome to work on")
+    parser.add_argument('-a', '--set-a', dest='set_a',
+                        nargs="+",
+                        help="first set of regulators to analyse")
+    parser.add_argument('-b', '--set-b', dest='set_b',
+                        nargs="+",
+                        help="second set of regulators to analyse")
+    parser.add_argument('--genes', dest='genes',
+                        nargs="+", default=['all'])
+    parser.add_argument('--match-a', dest='match_a',
+                        choices=['any', 'all'], default='any',
+                        help="all or any regulators in set A must match")
+    parser.add_argument('--region-a', dest='region_a', default='any',
+                        choices=['any', '3prime', '5prime', 'intron', 'intergenic'],
+                        help="region to match set A in")
+    parser.add_argument('--match-b', dest='match_b',
+                        choices=['any', 'all'], default='any',
+                        help="all or any regulators in set B must match")
+    parser.add_argument('--region-b', dest='region_b', default='any',
+                        choices=['any', '3prime', '5prime', 'intron', 'intergenic'],
+                        help="region to match set B in")
     parser.add_argument('-d', '--debug', dest='debug',
                         action='store_true', default=False,
                         help="print debugging information to stderr")
@@ -37,6 +59,11 @@ def main():
         list_regulators()
         sys.exit(0)
 
+    if not 'genome' in options or options.genome is None:
+        parser.error("You need to select a genome")
+
+    if not 'set_a' in options or options.set_a is None:
+        parser.error("You need to select regulators for set A")
 
     logging.error("This program doesn't do anything yet")
     sys.exit(1)
