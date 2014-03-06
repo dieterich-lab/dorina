@@ -56,7 +56,7 @@ def main():
             items.sort(key=lambda x: x[0])
             for name, data in items:
                 print "\t%s" % name
-                print "\t\t%summary" % data['summary']
+                print "\t\t%s" % data['summary']
         sys.exit(0)
 
 
