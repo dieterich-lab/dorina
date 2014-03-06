@@ -30,33 +30,11 @@ def main():
     set_config(options)
 
     if options.list_genomes:
-        genomes = utils.get_genomes()
-        print "Available genomes:"
-        print "------------------"
-        for clade, clade_dict in genomes.items():
-            print "%s" % clade
-            for species, species_dict in clade_dict.items():
-                print "\t%s" % species
-                for assembly, assembly_dict in species_dict.items():
-                    print "\t\t%s" % assembly
-                    gffs = assembly_dict.items()
-                    gffs.sort(key=lambda x: x[0])
-                    for gff in gffs:
-                        print "\t\t\t%s: %s" % gff
-
+        list_genomes()
         sys.exit(0)
 
     if options.list_regulators:
-        regulators = utils.get_regulators()
-        print "Available regulators:"
-        print "---------------------"
-        for regulator, regulator_dict in regulators.items():
-            print "%s" % regulator
-            items = regulator_dict.items()
-            items.sort(key=lambda x: x[0])
-            for name, data in items:
-                print "\t%s" % name
-                print "\t\t%s" % data['summary']
+        list_regulators()
         sys.exit(0)
 
 
@@ -76,6 +54,36 @@ def setup_logging(options):
     logging.basicConfig(format="%(levelname)s: %(message)s",
                         level=log_level)
 
+
+def list_genomes():
+    """List all available genomes"""
+    genomes = utils.get_genomes()
+    print "Available genomes:"
+    print "------------------"
+    for clade, clade_dict in genomes.items():
+        print "%s" % clade
+        for species, species_dict in clade_dict.items():
+            print "\t%s" % species
+            for assembly, assembly_dict in species_dict.items():
+                print "\t\t%s" % assembly
+                gffs = assembly_dict.items()
+                gffs.sort(key=lambda x: x[0])
+                for gff in gffs:
+                    print "\t\t\t%s: %s" % gff
+
+
+def list_regulators():
+    """List all available regulators"""
+    regulators = utils.get_regulators()
+    print "Available regulators:"
+    print "---------------------"
+    for regulator, regulator_dict in regulators.items():
+        print "%s" % regulator
+        items = regulator_dict.items()
+        items.sort(key=lambda x: x[0])
+        for name, data in items:
+            print "\t%s" % name
+            print "\t\t%s" % data['summary']
 
 if __name__ == "__main__":
     main()
