@@ -70,7 +70,8 @@ class TestListData(unittest.TestCase):
                 { 'title': 'A very important publication',
                   'authors': ['Jules Verne', 'Orson Wells'],
                   'pages': '23-42', 'journal': 'Annals of Science Fiction',
-                  'year': '1870'
+                  'year': '1870',
+                  'pubmed': 'http://www.ncbi.nlm.nih.gov/pubmed/12345678'
                 }
             ]
         }
