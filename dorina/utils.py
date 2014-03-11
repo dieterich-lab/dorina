@@ -118,3 +118,20 @@ def get_genome_by_name(name):
                 return path.join(options.data.path, 'genomes', clade, species, name)
 
     return None
+
+
+def get_regulator_by_name(name):
+    """Take a regulator name and return the path to the regulator basename without file extension"""
+    options = config.get_config()
+
+    regulators = get_regulators()
+
+    for clade, clade_dir in regulators.items():
+        for species, species_dir in clade_dir.items():
+            for assembly, assembly_dir in species_dir.items():
+                for regulator, regulator_dir in assembly_dir.items():
+                    if name in regulator_dir:
+                        return path.join(options.data.path, 'regulators',
+                                clade, species, assembly, regulator, name)
+
+    return None
