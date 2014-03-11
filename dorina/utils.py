@@ -104,3 +104,17 @@ def walk_assembly_tree(root_dir, parse_func):
                 parse_func(assembly_path, assembly_dict)
 
     return genomes
+
+
+def get_genome_by_name(name):
+    """Take a genome name and return the path to the genome directory"""
+    options = config.get_config()
+
+    genomes = get_genomes()
+
+    for clade, clade_dir in genomes.items():
+        for species, species_dir in clade_dir.items():
+            if name in species_dir:
+                return path.join(options.data.path, 'genomes', clade, species, name)
+
+    return None

@@ -86,3 +86,13 @@ class TestListData(unittest.TestCase):
         basedir = path.join(datadir, 'regulators', 'mammals', 'h_sapiens', 'hg19')
         got = utils.parse_experiment(path.join(datadir, basedir, 'RBP', 'scifi.json'))
         self.assertEqual(expected, got)
+
+
+    def test_get_genome_by_name(self):
+        """Test utils.get_genome_by_name()"""
+        got = utils.get_genome_by_name("invalid")
+        self.assertIsNone(got)
+
+        expected = path.join(datadir, 'genomes', 'mammals', 'h_sapiens', 'hg19')
+        got = utils.get_genome_by_name("hg19")
+        self.assertEqual(expected, got)
