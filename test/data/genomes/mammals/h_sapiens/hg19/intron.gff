@@ -1,0 +1,5 @@
+#gff2
+chr1	doRiNA2	intron	301	401	.	.	.	gene01.01
+chr1	doRiNA2	intron	701	800	.	.	.	gene01.01
+chr1	doRiNA2	intron	2301	2401	.	.	.	gene01.02
+chr1	doRiNA2	intron	2701	2800	.	.	.	gene01.02
