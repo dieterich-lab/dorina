@@ -23,13 +23,13 @@ def main():
                         choices=['any', 'all'], default='any',
                         help="all or any regulators in set A must match")
     parser.add_argument('--region-a', dest='region_a', default='any',
-                        choices=['any', '3prime', '5prime', 'intron', 'intergenic'],
+                        choices=['any', 'CDS', '3prime', '5prime', 'intron', 'intergenic'],
                         help="region to match set A in")
     parser.add_argument('--match-b', dest='match_b',
                         choices=['any', 'all'], default='any',
                         help="all or any regulators in set B must match")
     parser.add_argument('--region-b', dest='region_b', default='any',
-                        choices=['any', '3prime', '5prime', 'intron', 'intergenic'],
+                        choices=['any', 'CDS', '3prime', '5prime', 'intron', 'intergenic'],
                         help="region to match set B in")
     parser.add_argument('-d', '--debug', dest='debug',
                         action='store_true', default=False,
