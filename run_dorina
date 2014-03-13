@@ -6,6 +6,7 @@ import logging
 import argparse
 from dorina.config import load_config, set_config
 from dorina import utils
+from dorina import run
 
 def main():
     parser = argparse.ArgumentParser(description="Run doRiNA from the command line")
@@ -78,8 +79,9 @@ def main():
         list_regulators()
         sys.exit(1)
 
-    logging.error("This program doesn't do anything yet")
-    sys.exit(1)
+    result = run.analyse(options.genome, options.set_a)
+    print result
+    sys.exit(0)
 
 
 def setup_logging(options):
