@@ -65,6 +65,19 @@ def main():
     if not 'set_a' in options or options.set_a is None:
         parser.error("You need to select regulators for set A")
 
+
+    genome = utils.get_genome_by_name(options.genome)
+    if genome is None:
+        print "Selected genome %r not found." % options.genome
+        list_genomes()
+        sys.exit(1)
+
+    set_a = map(utils.get_regulator_by_name, options.set_a)
+    if set_a.count(None) > 0:
+        print "Regulator %r not found." % options.set_a[set_a.index(None)]
+        list_regulators()
+        sys.exit(1)
+
     logging.error("This program doesn't do anything yet")
     sys.exit(1)
 
