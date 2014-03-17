@@ -16,7 +16,21 @@ def analyse(genome, set_a):
     genome_bed = _get_genome_bedtool(genome, options.region_a)
     regulators = map(_get_regulator_bedtool, set_a)
 
-    return genome_bed.intersect(regulators[0], wa=True, wb=True)
+    if options.match_a == 'any':
+        regulator = _merge_regulators(regulators)
+
+    return genome_bed.intersect(regulator, wa=True, wb=True)
+
+
+def _merge_regulators(regulators):
+    """Merge a list of regulators using BedTool.cat"""
+    regulator = regulators[0]
+    for i in range(1, len(regulators)):
+        logging.debug('merging regulator %r' % regulators[i])
+        regulator = regulator.cat(regulators[i], postmerge=False)
+
+    return regulator
+
 
 def _get_genome_bedtool(genome_name, region):
     """get the bedtool object for a genome depending on the name and the region"""

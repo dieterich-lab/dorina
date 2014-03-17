@@ -17,6 +17,7 @@ class TestAnalyse(unittest.TestCase):
         options.data = Namespace()
         options.data.path = datadir
         config.set_config(options)
+        self.maxDiff = None
 
     def tearDown(self):
         config.set_config(self.old_config)
@@ -51,6 +52,19 @@ chr1	doRiNA2	gene	2001	3000	.	+	.	gene01.02	chr1	2350	2360	scifi_intron	5	+	2350
         expected = """chr1	doRiNA2	intergenic	1001	2000	.	.	.	intergenic01.01	chr1	1250	1260	scifi_intergenic	5		1250	1260
 """
         got = run.analyse('hg19', ['scifi'])
+        self.assertMultiLineEqual(expected, str(got))
+
+    def test_analyse_all_regions_seta_any(self):
+        """Test run.analyse() on all regions with two regulators with any matches"""
+        options = config.get_config()
+        options.match_a = 'any'
+        options.region_a = 'any'
+        expected = """chr1	doRiNA2	gene	1	1000	.	+	.	gene01.01	chr1	255	265	fake01_cds	5	+	255	265
+chr1	doRiNA2	CDS	201	300	.	+	0	gene01.01	chr1	255	265	fake01_cds	5	+	255	265
+chr1	doRiNA2	gene	2001	3000	.	+	.	gene01.02	chr1	2450	2460	fake02_intron	5	+	2450	2460
+chr1	doRiNA2	CDS	2401	2700	.	+	1	gene01.02	chr1	2450	2460	fake02_intron	5	+	2450	2460
+"""
+        got = run.analyse('hg19', ['fake01', 'fake02'])
         self.assertMultiLineEqual(expected, str(got))
 
     def test_get_genome_bedtool(self):
