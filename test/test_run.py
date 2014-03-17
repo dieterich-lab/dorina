@@ -55,7 +55,7 @@ chr1	doRiNA2	gene	2001	3000	.	+	.	gene01.02	chr1	2350	2360	scifi_intron	5	+	2350
         self.assertMultiLineEqual(expected, str(got))
 
     def test_analyse_all_regions_seta_any(self):
-        """Test run.analyse() on all regions with two regulators with any matches"""
+        """Test run.analyse() on all regions with two regulators with match to any regulator"""
         options = config.get_config()
         options.match_a = 'any'
         options.region_a = 'any'
@@ -65,6 +65,17 @@ chr1	doRiNA2	gene	2001	3000	.	+	.	gene01.02	chr1	2450	2460	fake02_intron	5	+	245
 chr1	doRiNA2	CDS	2401	2700	.	+	1	gene01.02	chr1	2450	2460	fake02_intron	5	+	2450	2460
 """
         got = run.analyse('hg19', ['fake01', 'fake02'])
+        self.assertMultiLineEqual(expected, str(got))
+
+    def test_analyse_all_regions_seta_all(self):
+        """Test run.analyse() on all regions with two regulators with match to all regulators"""
+        options = config.get_config()
+        options.match_a = 'all'
+        options.region_a = 'any'
+        expected = """chr1	doRiNA2	gene	1	1000	.	+	.	gene01.01	chr1	250	260	scifi_cds	5	+	250	260	chr1	255	265	fake01_cds	5	+	255	265
+chr1	doRiNA2	CDS	201	300	.	+	0	gene01.01	chr1	250	260	scifi_cds	5	+	250	260	chr1	255	265	fake01_cds	5	+	255	265
+"""
+        got = run.analyse('hg19', ['scifi', 'fake01'])
         self.assertMultiLineEqual(expected, str(got))
 
     def test_get_genome_bedtool(self):

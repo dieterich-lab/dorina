@@ -18,6 +18,8 @@ def analyse(genome, set_a):
 
     if options.match_a == 'any':
         regulator = _merge_regulators(regulators)
+    elif options.match_a == 'all':
+        regulator = _intersect_regulatrs(regulators)
 
     return genome_bed.intersect(regulator, wa=True, wb=True)
 
@@ -28,6 +30,16 @@ def _merge_regulators(regulators):
     for i in range(1, len(regulators)):
         logging.debug('merging regulator %r' % regulators[i])
         regulator = regulator.cat(regulators[i], postmerge=False)
+
+    return regulator
+
+
+def _intersect_regulatrs(regulators):
+    """Intersect a list of regulators using BedTool.intersect"""
+    regulator = regulators[0]
+    for i in range(1, len(regulators)):
+        logging.debug('intersect regulator %r' % regulators[i])
+        regulator = regulator.intersect(regulators[i], wa=True, wb=True)
 
     return regulator
 
