@@ -11,7 +11,11 @@ _default_name = 'default.cfg'
 
 def load_config(namespace):
     """Load config, but don't overwrite existing settings"""
-    default_file = path.join(_basedir, _default_name)
+
+    if 'configfile' in namespace:
+        default_file = namespace.configfile
+    else:
+        default_file = path.join(_basedir, _default_name)
 
     config = ConfigParser.ConfigParser()
     with open(default_file, 'r') as fp:

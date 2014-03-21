@@ -32,6 +32,9 @@ def main():
     parser.add_argument('--region-b', dest='region_b', default='any',
                         choices=['any', 'CDS', '3prime', '5prime', 'intron', 'intergenic'],
                         help="region to match set B in")
+    parser.add_argument('-c', '--configfile', dest='configfile',
+                        default=argparse.SUPPRESS,
+                        help="Load configuration from an alternative file")
     parser.add_argument('-d', '--debug', dest='debug',
                         action='store_true', default=False,
                         help="print debugging information to stderr")
