@@ -7,7 +7,7 @@ from pybedtools import BedTool
 from dorina import utils
 
 
-def analyse(genome, set_a, match_a='any', region_a='any', datadir=None):
+def analyse(genome, set_a, match_a='any', region_a='any', genes=None, datadir=None):
     """Run doRiNA analysis"""
     logging.debug("analyse(%r, %r(%s))" % (genome, set_a, match_a))
 
