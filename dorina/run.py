@@ -11,6 +11,13 @@ def analyse(genome, set_a, match_a='any', region_a='any', datadir=None):
     """Run doRiNA analysis"""
     logging.debug("analyse(%r, %r(%s))" % (genome, set_a, match_a))
 
+    return _parse_results(_analyse(genome, set_a, match_a, region_a, datadir))
+
+
+def _analyse(genome, set_a, match_a='any', region_a='any', datadir=None):
+    """Run doRiNA analysis, internal logic"""
+    logging.debug("analyse(%r, %r(%s))" % (genome, set_a, match_a))
+
     genome_bed = _get_genome_bedtool(genome, region_a, datadir)
     regulators = map(lambda x: _get_regulator_bedtool(x, datadir), set_a)
 
@@ -66,3 +73,29 @@ def _get_genome_bedtool(genome_name, region, datadir=None):
 def _get_regulator_bedtool(regulator_name, datadir=None):
     """get the bedtool object for a regulator"""
     return BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir))
+
+
+def _parse_results(bedtool_results):
+    """parse a bedtool result data structure"""
+    results = []
+
+    for res in bedtool_results:
+        line = str(res).strip().split('\t')
+
+        track = line[0]
+        gene = line[8]
+        data_source = line[12].split('_')[0]
+        score = int(line[13])
+        site = line[12]
+        strand = line[6]
+        start = line[10]
+        end = line[11]
+        if len(line) > 19:
+            start = min(start, line[18])
+            end = max(end, line[19])
+        location = "%s:%s-%s" % (track, start, end)
+
+        results.append(dict(track=track, gene=gene, data_source=data_source,
+                            score=score, site=site, location=location, strand=strand))
+
+    return results
