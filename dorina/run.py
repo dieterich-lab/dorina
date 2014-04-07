@@ -8,17 +8,23 @@ from dorina import config
 from dorina import utils
 
 
-def analyse(genome, set_a):
+def analyse(genome, set_a, match_a=None, region_a=None, datadir=None):
     """Run doRiNA analysis"""
     options = config.get_config()
-    logging.debug("analyse(%r, %r(%s))" % (genome, set_a, options.match_a))
 
-    genome_bed = _get_genome_bedtool(genome, options.region_a)
-    regulators = map(_get_regulator_bedtool, set_a)
+    if match_a is None:
+        match_a = options.match_a
+    if region_a is None:
+        region_a = options.region_a
 
-    if options.match_a == 'any':
+    logging.debug("analyse(%r, %r(%s))" % (genome, set_a, match_a))
+
+    genome_bed = _get_genome_bedtool(genome, region_a, datadir)
+    regulators = map(lambda x: _get_regulator_bedtool(x, datadir), set_a)
+
+    if match_a == 'any':
         regulator = _merge_regulators(regulators)
-    elif options.match_a == 'all':
+    elif match_a == 'all':
         regulator = _intersect_regulatrs(regulators)
 
     return genome_bed.intersect(regulator, wa=True, wb=True)
@@ -44,9 +50,9 @@ def _intersect_regulatrs(regulators):
     return regulator
 
 
-def _get_genome_bedtool(genome_name, region):
+def _get_genome_bedtool(genome_name, region, datadir=None):
     """get the bedtool object for a genome depending on the name and the region"""
-    genome = utils.get_genome_by_name(genome_name)
+    genome = utils.get_genome_by_name(genome_name, datadir)
     if region == "any":
         filename = path.join(genome, 'all.gff')
     elif region == "CDS":
@@ -65,6 +71,6 @@ def _get_genome_bedtool(genome_name, region):
     return BedTool(filename)
 
 
-def _get_regulator_bedtool(regulator_name):
+def _get_regulator_bedtool(regulator_name, datadir=None):
     """get the bedtool object for a regulator"""
-    return BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name))
+    return BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir))
