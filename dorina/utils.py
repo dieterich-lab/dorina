@@ -6,7 +6,7 @@ import json
 from os import path
 from dorina import config
 
-def get_genomes():
+def get_genomes(datadir=None):
     """Get all available genomes"""
     def parse_func(assembly_path, assembly_dict):
         for gff_file in os.listdir(assembly_path):
@@ -19,10 +19,10 @@ def get_genomes():
             if ext in ('.gff', '.bed'):
                 assembly_dict[root] = True
 
-    return walk_assembly_tree('genomes', parse_func)
+    return walk_assembly_tree(datadir, 'genomes', parse_func)
 
 
-def get_regulators():
+def get_regulators(datadir=None):
     """Get all available regulators"""
     def parse_func(root, regulators):
         for regulator in os.listdir(root):
@@ -54,7 +54,7 @@ def get_regulators():
                 experiment_dict = parse_experiment(experiment_path)
                 regulator_dict[experiment_root] = experiment_dict
 
-    return walk_assembly_tree('regulators',parse_func)
+    return walk_assembly_tree(datadir, 'regulators',parse_func)
 
 
 def parse_experiment(filename):
@@ -66,14 +66,17 @@ def parse_experiment(filename):
 
     return experiment
 
-def walk_assembly_tree(root_dir, parse_func):
+def walk_assembly_tree(datadir, root_dir, parse_func):
     """Wa;k a directory structure containg clade, species, assembly
 
     Call parse_func() for every assembly directory"""
     options = config.get_config()
     genomes = {}
 
-    root = path.join(options.data.path, root_dir)
+    if datadir is None:
+        root = path.join(options.data.path, root_dir)
+    else:
+        root = path.join(datadir, root_dir)
 
     for clade in os.listdir(root):
         clade_path = path.join(root, clade)
@@ -106,32 +109,38 @@ def walk_assembly_tree(root_dir, parse_func):
     return genomes
 
 
-def get_genome_by_name(name):
+def get_genome_by_name(name, datadir=None):
     """Take a genome name and return the path to the genome directory"""
     options = config.get_config()
 
-    genomes = get_genomes()
+    if datadir is None:
+        datadir = options.data.path
+
+    genomes = get_genomes(datadir=datadir)
 
     for clade, clade_dir in genomes.items():
         for species, species_dir in clade_dir.items():
             if name in species_dir:
-                return path.join(options.data.path, 'genomes', clade, species, name)
+                return path.join(datadir, 'genomes', clade, species, name)
 
     return None
 
 
-def get_regulator_by_name(name):
+def get_regulator_by_name(name, datadir=None):
     """Take a regulator name and return the path to the regulator basename without file extension"""
     options = config.get_config()
 
-    regulators = get_regulators()
+    if datadir is None:
+        datadir = options.data.path
+
+    regulators = get_regulators(datadir=datadir)
 
     for clade, clade_dir in regulators.items():
         for species, species_dir in clade_dir.items():
             for assembly, assembly_dir in species_dir.items():
                 for regulator, regulator_dir in assembly_dir.items():
                     if name in regulator_dir:
-                        return path.join(options.data.path, 'regulators',
+                        return path.join(datadir, 'regulators',
                                 clade, species, assembly, regulator, name)
 
     return None
