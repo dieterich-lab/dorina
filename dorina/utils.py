@@ -4,9 +4,8 @@ import logging
 import os
 import json
 from os import path
-from dorina import config
 
-def get_genomes(datadir=None):
+def get_genomes(datadir):
     """Get all available genomes"""
     def parse_func(assembly_path, assembly_dict):
         for gff_file in os.listdir(assembly_path):
@@ -22,7 +21,7 @@ def get_genomes(datadir=None):
     return walk_assembly_tree(datadir, 'genomes', parse_func)
 
 
-def get_regulators(datadir=None):
+def get_regulators(datadir):
     """Get all available regulators"""
     def parse_func(root, regulators):
         for regulator in os.listdir(root):
@@ -70,13 +69,9 @@ def walk_assembly_tree(datadir, root_dir, parse_func):
     """Wa;k a directory structure containg clade, species, assembly
 
     Call parse_func() for every assembly directory"""
-    options = config.get_config()
     genomes = {}
 
-    if datadir is None:
-        root = path.join(options.data.path, root_dir)
-    else:
-        root = path.join(datadir, root_dir)
+    root = path.join(datadir, root_dir)
 
     for clade in os.listdir(root):
         clade_path = path.join(root, clade)
@@ -109,13 +104,8 @@ def walk_assembly_tree(datadir, root_dir, parse_func):
     return genomes
 
 
-def get_genome_by_name(name, datadir=None):
+def get_genome_by_name(name, datadir):
     """Take a genome name and return the path to the genome directory"""
-    options = config.get_config()
-
-    if datadir is None:
-        datadir = options.data.path
-
     genomes = get_genomes(datadir=datadir)
 
     for clade, clade_dir in genomes.items():
@@ -126,13 +116,8 @@ def get_genome_by_name(name, datadir=None):
     return None
 
 
-def get_regulator_by_name(name, datadir=None):
+def get_regulator_by_name(name, datadir):
     """Take a regulator name and return the path to the regulator basename without file extension"""
-    options = config.get_config()
-
-    if datadir is None:
-        datadir = options.data.path
-
     regulators = get_regulators(datadir=datadir)
 
     for clade, clade_dir in regulators.items():

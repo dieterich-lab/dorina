@@ -56,11 +56,11 @@ def main():
     set_config(options)
 
     if options.list_genomes:
-        list_genomes()
+        list_genomes(options.data.path)
         sys.exit(0)
 
     if options.list_regulators:
-        list_regulators()
+        list_regulators(options.data.path)
         sys.exit(0)
 
     if not 'genome' in options or options.genome is None:
@@ -70,19 +70,19 @@ def main():
         parser.error("You need to select regulators for set A")
 
 
-    genome = utils.get_genome_by_name(options.genome)
+    genome = utils.get_genome_by_name(options.genome, options.data.path)
     if genome is None:
         print "Selected genome %r not found." % options.genome
-        list_genomes()
+        list_genomes(options.data.path)
         sys.exit(1)
 
-    set_a = map(utils.get_regulator_by_name, options.set_a)
+    set_a = map(lambda x: utils.get_regulator_by_name(x, options.data.path), options.set_a)
     if set_a.count(None) > 0:
         print "Regulator %r not found." % options.set_a[set_a.index(None)]
-        list_regulators()
+        list_regulators(options.data.path)
         sys.exit(1)
 
-    result = run.analyse(options.genome, options.set_a)
+    result = run.analyse(options.genome, options.set_a, options.match_a, options.region_a, options.data.path)
     print result
     sys.exit(0)
 
@@ -100,9 +100,9 @@ def setup_logging(options):
                         level=log_level)
 
 
-def list_genomes():
+def list_genomes(datadir):
     """List all available genomes"""
-    genomes = utils.get_genomes()
+    genomes = utils.get_genomes(datadir)
     print "Available genomes:"
     print "------------------"
     for clade, clade_dict in genomes.items():
@@ -117,9 +117,9 @@ def list_genomes():
                     print "\t\t\t%s: %s" % gff
 
 
-def list_regulators():
+def list_regulators(datadir):
     """List all available regulators"""
-    regulators = utils.get_regulators()
+    regulators = utils.get_regulators(datadir)
     print "Available regulators:"
     print "---------------------"
     for clade, clade_dict in regulators.items():

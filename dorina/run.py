@@ -4,19 +4,11 @@ import logging
 from os import path
 from cStringIO import StringIO
 from pybedtools import BedTool
-from dorina import config
 from dorina import utils
 
 
-def analyse(genome, set_a, match_a=None, region_a=None, datadir=None):
+def analyse(genome, set_a, match_a='any', region_a='any', datadir=None):
     """Run doRiNA analysis"""
-    options = config.get_config()
-
-    if match_a is None:
-        match_a = options.match_a
-    if region_a is None:
-        region_a = options.region_a
-
     logging.debug("analyse(%r, %r(%s))" % (genome, set_a, match_a))
 
     genome_bed = _get_genome_bedtool(genome, region_a, datadir)
