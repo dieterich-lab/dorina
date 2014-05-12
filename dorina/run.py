@@ -83,7 +83,7 @@ def _parse_results(bedtool_results):
         line = str(res).strip().split('\t')
 
         track = line[0]
-        gene = line[8]
+        gene = line[8].split(';')[0].split('=')[-1]
         data_source = line[12].split('_')[0]
         score = int(line[13])
         site = line[12]

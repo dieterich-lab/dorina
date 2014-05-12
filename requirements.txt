@@ -1,2 +1,2 @@
 Cython==0.20.1
-pybedtools==0.6.4
+pybedtools>=0.6.4
