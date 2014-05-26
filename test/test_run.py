@@ -19,8 +19,6 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         expected = [
             dict(track="chr1", gene="gene01.01", data_source='scifi', score=5, site="scifi_cds",
                  location="chr1:250-260", strand="+"),
-            dict(track="chr1", gene="gene01.01", data_source='scifi', score=5, site="scifi_cds",
-                 location="chr1:250-260", strand="+"),
             dict(track="chr1", gene="gene01.02", data_source='scifi', score=5, site="scifi_intron",
                  location="chr1:2350-2360", strand="+")
         ]
@@ -59,10 +57,6 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         expected = [
             dict(track="chr1", gene="gene01.01", data_source='fake01', score=5, site="fake01_cds",
                  location="chr1:255-265", strand="+"),
-            dict(track="chr1", gene="gene01.01", data_source='fake01', score=5, site="fake01_cds",
-                 location="chr1:255-265", strand="+"),
-            dict(track="chr1", gene="gene01.02", data_source='fake02', score=5, site="fake02_intron",
-                 location="chr1:2450-2460", strand="+"),
             dict(track="chr1", gene="gene01.02", data_source='fake02', score=5, site="fake02_intron",
                  location="chr1:2450-2460", strand="+")
         ]
@@ -75,8 +69,6 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
     def test_analyse_all_regions_seta_all(self):
         """Test run.analyse() on all regions with two regulators with match to all regulators"""
         expected = [
-            dict(track="chr1", gene="gene01.01", data_source='scifi', score=5, site="scifi_cds",
-                 location="chr1:250-265", strand="+"),
             dict(track="chr1", gene="gene01.01", data_source='scifi', score=5, site="scifi_cds",
                  location="chr1:250-265", strand="+")
         ]
@@ -127,8 +119,6 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         """Test run._parse_results()"""
         results = run._analyse('hg19', set_a=['scifi', 'fake01'], match_a='all', region_a='any', datadir=datadir)
         expected = [
-            dict(track="chr1", gene="gene01.01", data_source='scifi', score=5, site="scifi_cds",
-                 location="chr1:250-265", strand="+"),
             dict(track="chr1", gene="gene01.01", data_source='scifi', score=5, site="scifi_cds",
                  location="chr1:250-265", strand="+")
         ]
