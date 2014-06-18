@@ -39,14 +39,31 @@ def _merge_regulators(regulators):
     return regulator
 
 
-def _intersect_regulatrs(regulators):
+def _intersect_regulators(regulators):
     """Intersect a list of regulators using BedTool.intersect"""
     regulator = regulators[0]
     for i in range(1, len(regulators)):
         logging.debug('intersect regulator %r' % regulators[i])
-        regulator = regulator.intersect(regulators[i], wa=True, wb=True)
+        dirty_reg = regulator.intersect(regulators[i], wa=True, wb=True)
+        regulator = _cleanup_intersect_bed(dirty_reg)
 
     return regulator
+
+
+def _cleanup_intersect_bed(dirty):
+    clean_string = ''
+    for row in dirty:
+        new_start = "%s" % max(int(row[1]), int(row[9]))
+        new_end = "%s" % min(int(row[2]), int(row[10]))
+        new_name = "_".join([row[3], row[11]])
+        new_score = "%s" % ((int(row[4]) + int(row[12])) // 2)
+        new_strand = row[5] if row[5] == row[13] else '.'
+        new_row = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{1}\t{2}\n".format(
+            row[0], new_start, new_end, new_name, new_score, new_strand)
+        clean_string += new_row
+
+    return BedTool(clean_string, from_string=True)
+
 
 
 def _get_genome_bedtool(genome_name, region, datadir=None):

@@ -69,8 +69,8 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
     def test_analyse_all_regions_seta_all(self):
         """Test run.analyse() on all regions with two regulators with match to all regulators"""
         expected = [
-            dict(track="chr1", gene="gene01.01", data_source='scifi', score=5, site="scifi_cds",
-                 location="chr1:250-265", strand="+")
+            dict(track="chr1", gene="gene01.01", data_source='scifi', score=5, site="scifi_cds_fake01_cds",
+                 location="chr1:255-260", strand="+")
         ]
         got = run.analyse('hg19', set_a=['scifi', 'fake01'], match_a='all', region_a='any', datadir=datadir)
         self.assertEqual(expected, got)
@@ -115,12 +115,24 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         self.assertEqual(expected, got)
 
 
+    def test_cleanup_intersect_bed(self):
+        """Test run._cleanup_intersect_bed()"""
+        dirty_string = '''chr1	250	260	scifi_cds	5	+	250	260	chr1	255	265	fake01_cds	5	-	255	265'''
+        dirty = BedTool(dirty_string, from_string=True)
+
+        expected_string = '''chr1	255	260	scifi_cds_fake01_cds	5	.	255	260'''
+        expected = BedTool(expected_string, from_string=True)
+
+        got = run._cleanup_intersect_bed(dirty)
+        self.assertEqual(expected, got)
+
+
     def test_parse_results(self):
         """Test run._parse_results()"""
         results = run._analyse('hg19', set_a=['scifi', 'fake01'], match_a='all', region_a='any', datadir=datadir)
         expected = [
-            dict(track="chr1", gene="gene01.01", data_source='scifi', score=5, site="scifi_cds",
-                 location="chr1:250-265", strand="+")
+            dict(track="chr1", gene="gene01.01", data_source='scifi', score=5, site="scifi_cds_fake01_cds",
+                 location="chr1:255-260", strand="+")
         ]
 
         got = run._parse_results(results)
