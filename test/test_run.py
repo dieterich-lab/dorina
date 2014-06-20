@@ -141,12 +141,14 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
 
     def test_parse_results(self):
         """Test run._parse_results()"""
-        results = run._analyse('hg19', set_a=['scifi', 'fake01'], match_a='all', region_a='any', datadir=datadir)
+        given_string = '''chr1	doRiNA2	gene	1   1000    .	+   .	gene01.01   regulator=scifi_cds_fake01_cds,score=5,start=255,end=260'''
+        given = BedTool(given_string, from_string=True)
+
         expected = [
             dict(track="chr1", gene="gene01.01", data_source='scifi', score=5, site="scifi_cds_fake01_cds",
                  location="chr1:255-260", strand="+")
         ]
 
-        got = run._parse_results(results)
+        got = run._parse_results(given)
 
         self.assertEqual(expected, got)

@@ -106,19 +106,15 @@ def _parse_results(bedtool_results):
     results = []
 
     for res in bedtool_results:
-        line = str(res).strip().split('\t')
-
-        track = line[0]
-        gene = line[8].split(';')[0].split('=')[-1]
-        data_source = line[12].split('_')[0]
-        score = int(line[13])
-        site = line[12]
-        strand = line[6]
-        start = line[10]
-        end = line[11]
-        if len(line) > 19:
-            start = min(start, line[18])
-            end = max(end, line[19])
+        track = res.chrom
+        gene = res[8]
+        annotations = res[9].split(',')
+        data_source = annotations[0].split('=')[-1].split('_')[0]
+        score = int(annotations[1].split('=')[-1])
+        site = annotations[0].split('=')[-1]
+        strand = res[6]
+        start = annotations[2].split('=')[-1]
+        end = annotations[3].split('=')[-1]
         location = "%s:%s-%s" % (track, start, end)
 
         results.append(dict(track=track, gene=gene, data_source=data_source,
