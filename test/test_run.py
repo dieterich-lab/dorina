@@ -127,6 +127,18 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         self.assertEqual(expected, got)
 
 
+    def test_cleanup_intersect_gff(self):
+        """Test run._cleanup_intersect_gff()"""
+        dirty_string = '''chr1	doRiNA2	gene	1   1000    .	+   .	gene01.01   chr1    255	260 scifi_cds_fake01_cds    5	.	255	260'''
+	dirty = BedTool(dirty_string, from_string=True)
+
+        expected_string = '''chr1	doRiNA2	gene	1   1000    .	+   .	gene01.01   regulator=scifi_cds_fake01_cds,score=5,start=255,end=260'''
+	expected = BedTool(expected_string, from_string=True)
+
+	got = run._cleanup_intersect_gff(dirty)
+	self.assertEqual(str(expected), str(got))
+
+
     def test_parse_results(self):
         """Test run._parse_results()"""
         results = run._analyse('hg19', set_a=['scifi', 'fake01'], match_a='all', region_a='any', datadir=datadir)

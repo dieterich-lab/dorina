@@ -65,6 +65,15 @@ def _cleanup_intersect_bed(dirty):
     return BedTool(clean_string, from_string=True)
 
 
+def _cleanup_intersect_gff(dirty):
+    clean_string = ''
+    for row in dirty:
+        new_row = "\t".join(row[:9])
+        new_row += "\tregulator={0},score={1},start={2},end={3}\n".format(row[12],row[13], row[10], row[11])
+        clean_string += new_row
+
+    return BedTool(clean_string, from_string=True)
+
 
 def _get_genome_bedtool(genome_name, region, datadir=None):
     """get the bedtool object for a genome depending on the name and the region"""
