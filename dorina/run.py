@@ -69,7 +69,7 @@ def _cleanup_intersect_gff(dirty):
     clean_string = ''
     for row in dirty:
         new_row = "\t".join(row[:9])
-        new_row += "\tregulator={0},score={1},start={2},end={3}\n".format(row[12],row[13], row[10], row[11])
+        new_row += "\tregulator={0};score={1};start={2};end={3}\n".format(row[12],row[13], row[10], row[11])
         clean_string += new_row
 
     return BedTool(clean_string, from_string=True)
@@ -108,7 +108,7 @@ def _parse_results(bedtool_results):
     for res in bedtool_results:
         track = res.chrom
         gene = res[8]
-        annotations = res[9].split(',')
+        annotations = res[9].split(';')
         data_source = annotations[0].split('=')[-1].split('_')[0]
         score = int(annotations[1].split('=')[-1])
         site = annotations[0].split('=')[-1]
