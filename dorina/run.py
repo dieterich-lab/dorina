@@ -68,8 +68,9 @@ def _cleanup_intersect_bed(dirty):
 def _cleanup_intersect_gff(dirty):
     clean_string = ''
     for row in dirty:
-        new_row = "\t".join(row[:9])
-        new_row += "\tregulator={0};score={1};start={2};end={3}\n".format(row[12],row[13], row[10], row[11])
+        new_row = "\t".join(row[:8])
+        new_row += "\tgene={0};regulator={1};score={2};start={3};end={4}\n".format(row[8],
+            row[12], row[13], row[10], row[11])
         clean_string += new_row
 
     return BedTool(clean_string, from_string=True)
@@ -107,14 +108,14 @@ def _parse_results(bedtool_results):
 
     for res in bedtool_results:
         track = res.chrom
-        gene = res[8]
-        annotations = res[9].split(';')
-        data_source = annotations[0].split('=')[-1].split('_')[0]
-        score = int(annotations[1].split('=')[-1])
-        site = annotations[0].split('=')[-1]
+        annotations = res[8].split(';')
+        gene = annotations[0].split('=')[-1]
+        data_source = annotations[1].split('=')[-1].split('_')[0]
+        score = int(annotations[2].split('=')[-1])
+        site = annotations[1].split('=')[-1]
         strand = res[6]
-        start = annotations[2].split('=')[-1]
-        end = annotations[3].split('=')[-1]
+        start = annotations[3].split('=')[-1]
+        end = annotations[4].split('=')[-1]
         location = "%s:%s-%s" % (track, start, end)
 
         results.append(dict(track=track, gene=gene, data_source=data_source,

@@ -129,10 +129,10 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
 
     def test_cleanup_intersect_gff(self):
         """Test run._cleanup_intersect_gff()"""
-        dirty_string = '''chr1	doRiNA2	gene	1   1000    .	+   .	gene01.01   chr1    255	260 scifi_cds_fake01_cds    5	.	255	260'''
+        dirty_string = '''chr1	doRiNA2	gene	1	1000    .	+	.	gene01.01	chr1	255	260	scifi_cds_fake01_cds	5	.	255	260'''
 	dirty = BedTool(dirty_string, from_string=True)
 
-        expected_string = '''chr1	doRiNA2	gene	1   1000    .	+   .	gene01.01   regulator=scifi_cds_fake01_cds;score=5;start=255;end=260'''
+        expected_string = '''chr1	doRiNA2	gene	1	1000    .	+	.	gene=gene01.01;regulator=scifi_cds_fake01_cds;score=5;start=255;end=260'''
 	expected = BedTool(expected_string, from_string=True)
 
 	got = run._cleanup_intersect_gff(dirty)
@@ -141,7 +141,7 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
 
     def test_parse_results(self):
         """Test run._parse_results()"""
-        given_string = '''chr1	doRiNA2	gene	1   1000    .	+   .	gene01.01   regulator=scifi_cds_fake01_cds;score=5;start=255;end=260'''
+        given_string = '''chr1	doRiNA2	gene	1	1000    .	+	.	gene=gene01.01;regulator=scifi_cds_fake01_cds;score=5;start=255;end=260'''
         given = BedTool(given_string, from_string=True)
 
         expected = [
