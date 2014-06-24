@@ -78,6 +78,79 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         got = run.analyse('hg19', set_a=['scifi', 'fake01'], match_a='all', datadir=datadir)
         self.assertEqual(expected, got)
 
+    def test_analyse_all_regions_seta_and_setb(self):
+        """Test run.analyse() on all regions with any regulator from set A and any regulator from set B matching"""
+        expected = [
+            dict(track="chr1", gene="gene01.01", data_source='scifi', score=5, site="scifi_cds",
+                 location="chr1:250-260", strand="+")
+        ]
+        got = run.analyse('hg19', set_a=['scifi'], match_a='any', region_a='any',
+                          set_b=['fake01'], match_b='any', region_b='any',
+                          combine='and', datadir=datadir)
+        self.assertEqual(expected, got)
+
+    def test_analyse_all_regions_seta_or_setb(self):
+        """Test run.analyse() on all regions with any regulator from set A or any regulator from set B matching"""
+        expected = [
+            {'data_source': 'scifi',
+             'gene': 'gene01.01',
+             'location': 'chr1:250-260',
+             'score': 5,
+             'site': 'scifi_cds',
+             'strand': '+',
+             'track': 'chr1'},
+            {'data_source': 'scifi',
+             'gene': 'gene01.02',
+             'location': 'chr1:2350-2360',
+             'score': 5,
+             'site': 'scifi_intron',
+             'strand': '+',
+             'track': 'chr1'},
+            {'data_source': 'fake01',
+             'gene': 'gene01.01',
+             'location': 'chr1:255-265',
+             'score': 5,
+             'site': 'fake01_cds',
+             'strand': '+',
+             'track': 'chr1'}
+     ]
+        got = run.analyse('hg19', set_a=['scifi'], match_a='any', region_a='any',
+                          set_b=['fake01'], match_b='any', region_b='any',
+                          combine='or', datadir=datadir)
+        self.assertEqual(expected, got)
+
+    def test_analyse_all_regions_seta_xor_setb(self):
+        """Test run.analyse() on all regions with any regulator from set A XOR any regulator from set B matching"""
+        expected = [
+            {'data_source': 'scifi',
+             'gene': 'gene01.02',
+             'location': 'chr1:2350-2360',
+             'score': 5,
+             'site': 'scifi_intron',
+             'strand': '+',
+             'track': 'chr1'}
+        ]
+        got = run.analyse('hg19', set_a=['scifi'], match_a='any', region_a='any',
+                          set_b=['fake01'], match_b='any', region_b='any',
+                          combine='xor', datadir=datadir)
+        self.assertEqual(expected, got)
+
+    def test_analyse_all_regions_seta_not_setb(self):
+        """Test run.analyse() on all regions with any regulator from set A but no regulator from set B matching"""
+        expected = [
+            {'data_source': 'scifi',
+             'gene': 'gene01.02',
+             'location': 'chr1:2350-2360',
+             'score': 5,
+             'site': 'scifi_intron',
+             'strand': '+',
+             'track': 'chr1'}
+        ]
+        got = run.analyse('hg19', set_a=['scifi'], match_a='any', region_a='any',
+                          set_b=['fake01'], match_b='any', region_b='any',
+                          combine='not', datadir=datadir)
+        self.assertEqual(expected, got)
+
     def test_get_genome_bedtool(self):
         """Test run._get_genome_bedtool()"""
         # should raise a ValueError for an invalid region

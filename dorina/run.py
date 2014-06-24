@@ -7,27 +7,57 @@ from pybedtools import BedTool
 from dorina import utils
 
 
-def analyse(genome, set_a, match_a='any', region_a='any', genes=None, datadir=None):
+def analyse(genome, set_a, match_a='any', region_a='any',
+            set_b=None, match_b='any', region_b='any',
+            combine='or', datadir=None):
     """Run doRiNA analysis"""
     logging.debug("analyse(%r, %r(%s))" % (genome, set_a, match_a))
 
-    return _parse_results(_analyse(genome, set_a, match_a, region_a, datadir))
+    return _parse_results(_analyse(genome, set_a, match_a, region_a,
+                                   set_b, match_b, region_b, combine, datadir))
 
 
-def _analyse(genome, set_a, match_a='any', region_a='any', datadir=None):
+def _analyse(genome, set_a, match_a='any', region_a='any',
+             set_b=None, match_b='any', region_b='any', combine='or', datadir=None):
     """Run doRiNA analysis, internal logic"""
     logging.debug("analyse(%r, %r(%s))" % (genome, set_a, match_a))
 
-    genome_bed = _get_genome_bedtool(genome, region_a, datadir)
-    regulators = map(lambda x: _get_regulator_bedtool(x, datadir), set_a)
+    genome_bed_a = _get_genome_bedtool(genome, region_a, datadir)
+    regulators_a = map(lambda x: _get_regulator_bedtool(x, datadir), set_a)
 
     if match_a == 'any':
-        regulator = _merge_regulators(regulators)
+        regulator = _merge_regulators(regulators_a)
     elif match_a == 'all':
-        regulator = _intersect_regulatrs(regulators)
+        regulator = _intersect_regulators(regulators_a)
 
-    return genome_bed.intersect(regulator, wa=True, wb=True)
+    result_a = _cleanup_intersect_gff(genome_bed_a.intersect(regulator, wa=True, wb=True))
 
+    if set_b is not None:
+        genome_bed_b = _get_genome_bedtool(genome, region_b, datadir)
+        regulators_b = map(lambda x: _get_regulator_bedtool(x, datadir), set_b)
+
+        if match_b == 'any':
+            regulator = _merge_regulators(regulators_b)
+        elif match_b == 'all':
+            regulator = _intersect_regulators(regulators_b)
+
+        result_b = _cleanup_intersect_gff(genome_bed_b.intersect(regulator, wa=True, wb=True))
+
+        if combine == 'or':
+            final_results = _merge_regulators([result_a, result_b])
+        elif combine == 'and':
+            final_results = _cleanup_intersect_gff(result_a.intersect(result_b, wa=True, wb=True))
+        elif combine == 'xor':
+            not_in_b = result_a.intersect(result_b, v=True, wa=True)
+            not_in_a = result_b.intersect(result_a, v=True, wa=True)
+            final_results = _merge_regulators([not_in_b, not_in_a])
+        elif combine == 'not':
+            final_results = result_a.intersect(result_b, v=True, wa=True)
+
+    else:
+        final_results = result_a
+
+    return final_results
 
 def _merge_regulators(regulators):
     """Merge a list of regulators using BedTool.cat"""
