@@ -46,7 +46,7 @@ def _analyse(genome, set_a, match_a='any', region_a='any',
         if combine == 'or':
             final_results = _merge_regulators([result_a, result_b])
         elif combine == 'and':
-            final_results = _cleanup_intersect_gff(result_a.intersect(result_b, wa=True, wb=True))
+            final_results = _cleanup_intersect_gff_gff(result_a.intersect(result_b, wa=True, wb=True))
         elif combine == 'xor':
             not_in_b = result_a.intersect(result_b, v=True, wa=True)
             not_in_a = result_b.intersect(result_a, v=True, wa=True)
@@ -99,12 +99,29 @@ def _cleanup_intersect_gff(dirty):
     clean_string = ''
     for row in dirty:
         new_row = "\t".join(row[:8])
-        new_row += "\tgene={0};regulator={1};score={2};start={3};end={4}\n".format(row[8],
+        new_row += "\t{0};regulator={1};score={2};start={3};end={4}\n".format(row[8],
             row[12], row[13], row[10], row[11])
         clean_string += new_row
 
     return BedTool(clean_string, from_string=True)
 
+def _cleanup_intersect_gff_gff(dirty):
+    clean_string = ''
+    for row in dirty:
+        new_row = "\t".join(row[:8])
+        ann_a = _parse_annotations(row[8])
+        ann_b = _parse_annotations(row[17])
+        new_annotations = {}
+        new_annotations['regulator'] = "{0}~{1}".format(ann_a['regulator'], ann_b['regulator'])
+        new_annotations['score'] = "%s" % ((int(ann_a['score']) + int(ann_b['score'])) // 2)
+        new_annotations['start'] = "%s" % max(int(ann_a['start']), int(ann_b['start']))
+        new_annotations['end'] = "%s" % min(int(ann_a['end']), int(ann_b['end']))
+        new_row += "\tID={0};regulator={1};score={2};start={3};end={4}\n".format(ann_a['ID'],
+            new_annotations['regulator'], new_annotations['score'],
+            new_annotations['start'], new_annotations['end'])
+        clean_string += new_row
+
+    return BedTool(clean_string, from_string=True)
 
 def _get_genome_bedtool(genome_name, region, datadir=None):
     """get the bedtool object for a genome depending on the name and the region"""
@@ -138,17 +155,26 @@ def _parse_results(bedtool_results):
 
     for res in bedtool_results:
         track = res.chrom
-        annotations = res[8].split(';')
-        gene = annotations[0].split('=')[-1]
-        data_source = annotations[1].split('=')[-1].split('_')[0]
-        score = int(annotations[2].split('=')[-1])
-        site = annotations[1].split('=')[-1]
+        annotations = _parse_annotations(res[8])
+        gene = annotations['ID']
+        data_source = annotations['regulator']
+        score = int(annotations['score'])
+        site = annotations['regulator']
         strand = res[6]
-        start = annotations[3].split('=')[-1]
-        end = annotations[4].split('=')[-1]
+        start = annotations['start']
+        end = annotations['end']
         location = "%s:%s-%s" % (track, start, end)
 
         results.append(dict(track=track, gene=gene, data_source=data_source,
                             score=score, site=site, location=location, strand=strand))
 
     return results
+
+def _parse_annotations(string):
+    annotation_dict = {}
+    annotation_list = string.split(';')
+    for ann in annotation_list:
+        key, val = ann.split('=')
+        annotation_dict[key] = val
+
+    return annotation_dict
