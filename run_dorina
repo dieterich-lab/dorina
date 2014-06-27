@@ -82,7 +82,7 @@ def main():
         list_regulators(options.data.path)
         sys.exit(1)
 
-    result = run.analyse(options.genome, options.set_a, options.match_a, options.region_a, options.data.path)
+    result = run.analyse(options.genome, options.set_a, options.match_a, options.region_a, datadir=options.data.path)
     print result
     sys.exit(0)
 
