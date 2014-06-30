@@ -200,6 +200,18 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         self.assertEqual(expected, got)
 
 
+    def test_cleanup_intersect_bed6(self):
+        """Test run._cleanup_intersect_bed() with bed6 format files"""
+        dirty_string = '''chr1	250	260	scifi_cds	5	+	chr1	255	265	fake01_cds	5	-'''
+        dirty = BedTool(dirty_string, from_string=True)
+
+        expected_string = '''chr1	255	260	scifi_cds_fake01_cds	5	.	255	260'''
+        expected = BedTool(expected_string, from_string=True)
+
+        got = run._cleanup_intersect_bed(dirty)
+        self.assertEqual(expected, got)
+
+
     def test_cleanup_intersect_gff(self):
         """Test run._cleanup_intersect_gff()"""
         dirty_string = '''chr1	doRiNA2	gene	1	1000    .	+	.	ID=gene01.01	chr1	255	260	scifi_cds_fake01_cds	5	.	255	260'''

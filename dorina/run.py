@@ -83,11 +83,21 @@ def _intersect_regulators(regulators):
 def _cleanup_intersect_bed(dirty):
     clean_string = ''
     for row in dirty:
-        new_start = "%s" % max(int(row[1]), int(row[9]))
-        new_end = "%s" % min(int(row[2]), int(row[10]))
-        new_name = "_".join([row[3], row[11]])
-        new_score = "%s" % ((int(row[4]) + int(row[12])) // 2)
-        new_strand = row[5] if row[5] == row[13] else '.'
+        try:
+            # Bed9 format?
+            new_start = "%s" % max(int(row[1]), int(row[9]))
+            new_end = "%s" % min(int(row[2]), int(row[10]))
+            new_name = "_".join([row[3], row[11]])
+            new_score = "%s" % ((int(row[4]) + int(row[12])) // 2)
+            new_strand = row[5] if row[5] == row[13] else '.'
+        except ValueError:
+            # Try bed6 instead
+            new_start = "%s" % max(int(row[1]), int(row[7]))
+            new_end = "%s" % min(int(row[2]), int(row[8]))
+            new_name = "_".join([row[3], row[9]])
+            new_score = "%s" % ((int(row[4]) + int(row[10])) // 2)
+            new_strand = row[5] if row[5] == row[11] else '.'
+
         new_row = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{1}\t{2}\n".format(
             row[0], new_start, new_end, new_name, new_score, new_strand)
         clean_string += new_row
