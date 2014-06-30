@@ -195,7 +195,6 @@ def _parse_sources_regulators(string):
     sources = []
     regulators = []
     for r in raw:
-        print r
         source, regulator = r.split('#')
         sources.append(source)
         regulators.append(regulator)
