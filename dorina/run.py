@@ -87,14 +87,14 @@ def _cleanup_intersect_bed(dirty):
             # Bed9 format?
             new_start = "%s" % max(int(row[1]), int(row[9]))
             new_end = "%s" % min(int(row[2]), int(row[10]))
-            new_name = "_".join([row[3], row[11]])
+            new_name = "~".join([row[3], row[11]])
             new_score = "%s" % ((int(row[4]) + int(row[12])) // 2)
             new_strand = row[5] if row[5] == row[13] else '.'
         except ValueError:
             # Try bed6 instead
             new_start = "%s" % max(int(row[1]), int(row[7]))
             new_end = "%s" % min(int(row[2]), int(row[8]))
-            new_name = "_".join([row[3], row[9]])
+            new_name = "~".join([row[3], row[9]])
             new_score = "%s" % ((int(row[4]) + int(row[10])) // 2)
             new_strand = row[5] if row[5] == row[11] else '.'
 
@@ -167,9 +167,8 @@ def _parse_results(bedtool_results):
         track = res.chrom
         annotations = _parse_annotations(res[8])
         gene = annotations['ID']
-        data_source = annotations['regulator']
+        data_source, site = _parse_sources_regulators(annotations['regulator'])
         score = int(annotations['score'])
-        site = annotations['regulator']
         strand = res[6]
         start = annotations['start']
         end = annotations['end']
@@ -180,6 +179,7 @@ def _parse_results(bedtool_results):
 
     return results
 
+
 def _parse_annotations(string):
     annotation_dict = {}
     annotation_list = string.split(';')
@@ -188,3 +188,16 @@ def _parse_annotations(string):
         annotation_dict[key] = val
 
     return annotation_dict
+
+
+def _parse_sources_regulators(string):
+    raw = string.split('~')
+    sources = []
+    regulators = []
+    for r in raw:
+        print r
+        source, regulator = r.split('#')
+        sources.append(source)
+        regulators.append(regulator)
+
+    return "~".join(sources), "~".join(regulators)
