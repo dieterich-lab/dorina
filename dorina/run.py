@@ -87,19 +87,24 @@ def _cleanup_intersect_bed(dirty):
             # Bed9 format?
             new_start = "%s" % max(int(row[1]), int(row[9]))
             new_end = "%s" % min(int(row[2]), int(row[10]))
+            combined_start = "%s~%s" % (row[1], row[9])
+            combined_end = "%s~%s" % (row[2], row[10])
             new_name = "~".join([row[3], row[11]])
-            new_score = "%s" % ((int(row[4]) + int(row[12])) // 2)
+            new_score = "%s~%s" % (row[4], row[12])
             new_strand = row[5] if row[5] == row[13] else '.'
         except ValueError:
             # Try bed6 instead
             new_start = "%s" % max(int(row[1]), int(row[7]))
             new_end = "%s" % min(int(row[2]), int(row[8]))
+            combined_start = "%s~%s" % (row[1], row[7])
+            combined_end = "%s~%s" % (row[2], row[8])
             new_name = "~".join([row[3], row[9]])
-            new_score = "%s" % ((int(row[4]) + int(row[10])) // 2)
+            new_score = "%s~%s" % (row[4], row[10])
             new_strand = row[5] if row[5] == row[11] else '.'
 
-        new_row = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{1}\t{2}\n".format(
-            row[0], new_start, new_end, new_name, new_score, new_strand)
+        new_row = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\n".format(
+            row[0], new_start, new_end, new_name, new_score, new_strand,
+            combined_start, combined_end)
         clean_string += new_row
 
     return BedTool(clean_string, from_string=True)
@@ -109,8 +114,15 @@ def _cleanup_intersect_gff(dirty):
     clean_string = ''
     for row in dirty:
         new_row = "\t".join(row[:8])
+        if len(row.fields) >= 17:
+            start = row[15]
+            end = row[16]
+        else:
+            start = row[10]
+            end = row[11]
+
         new_row += "\t{0};regulator={1};score={2};start={3};end={4}\n".format(row[8],
-            row[12], row[13], row[10], row[11])
+            row[12], row[13], start, end)
         clean_string += new_row
 
     return BedTool(clean_string, from_string=True)
@@ -123,9 +135,9 @@ def _cleanup_intersect_gff_gff(dirty):
         ann_b = _parse_annotations(row[17])
         new_annotations = {}
         new_annotations['regulator'] = "{0}~{1}".format(ann_a['regulator'], ann_b['regulator'])
-        new_annotations['score'] = "%s" % ((int(ann_a['score']) + int(ann_b['score'])) // 2)
-        new_annotations['start'] = "%s" % max(int(ann_a['start']), int(ann_b['start']))
-        new_annotations['end'] = "%s" % min(int(ann_a['end']), int(ann_b['end']))
+        new_annotations['score'] = "%s~%s" % (ann_a['score'], ann_b['score'])
+        new_annotations['start'] = "%s~%s" % (ann_a['start'], ann_b['start'])
+        new_annotations['end'] = "%s~%s" % (ann_a['end'], ann_b['end'])
         new_row += "\tID={0};regulator={1};score={2};start={3};end={4}\n".format(ann_a['ID'],
             new_annotations['regulator'], new_annotations['score'],
             new_annotations['start'], new_annotations['end'])
@@ -167,15 +179,18 @@ def _parse_results(bedtool_results):
         annotations = _parse_annotations(res[8])
         gene = annotations['ID']
         tracks, data_sources, sites = _parse_tracks_sources_regulators(annotations['regulator'])
+        scores = annotations['score'].split('~')
+        starts = annotations['start'].split('~')
+        ends = annotations['end'].split('~')
         for i in range(len(tracks)):
             track = tracks[i]
-            score = int(annotations['score'])
-            strand = res[6]
-            start = annotations['start']
-            end = annotations['end']
-            location = "%s:%s-%s" % (res.chrom, start, end)
             data_source = data_sources[i]
             site = sites[i]
+            start = starts[i]
+            end = ends[i]
+            strand = res.strand
+            score = int(scores[i])
+            location = "%s:%s-%s" % (res.chrom, start, end)
             results.append(dict(track=track, gene=gene, data_source=data_source,
                             score=score, site=site, location=location, strand=strand))
 
