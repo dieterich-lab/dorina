@@ -164,17 +164,19 @@ def _parse_results(bedtool_results):
     results = []
 
     for res in bedtool_results:
-        track = res.chrom
         annotations = _parse_annotations(res[8])
         gene = annotations['ID']
-        data_source, site = _parse_sources_regulators(annotations['regulator'])
-        score = int(annotations['score'])
-        strand = res[6]
-        start = annotations['start']
-        end = annotations['end']
-        location = "%s:%s-%s" % (track, start, end)
-
-        results.append(dict(track=track, gene=gene, data_source=data_source,
+        tracks, data_sources, sites = _parse_tracks_sources_regulators(annotations['regulator'])
+        for i in range(len(tracks)):
+            track = tracks[i]
+            score = int(annotations['score'])
+            strand = res[6]
+            start = annotations['start']
+            end = annotations['end']
+            location = "%s:%s-%s" % (res.chrom, start, end)
+            data_source = data_sources[i]
+            site = sites[i]
+            results.append(dict(track=track, gene=gene, data_source=data_source,
                             score=score, site=site, location=location, strand=strand))
 
     return results
@@ -190,13 +192,16 @@ def _parse_annotations(string):
     return annotation_dict
 
 
-def _parse_sources_regulators(string):
+def _parse_tracks_sources_regulators(string):
     raw = string.split('~')
+    tracks = []
     sources = []
     regulators = []
     for r in raw:
-        source, regulator = r.split('#')
+        source, rest = r.split('#')
+        track, regulator = rest.split('*')
+        tracks.append(track)
         sources.append(source)
         regulators.append(regulator)
 
-    return "~".join(sources), "~".join(regulators)
+    return tracks, sources, regulators

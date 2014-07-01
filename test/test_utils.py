@@ -33,19 +33,19 @@ class TestListDataWithoutOptions(unittest.TestCase):
     def test_get_regulators(self):
         """Test utils.get_regulators()"""
         basedir = path.join(datadir, 'regulators', 'mammals', 'h_sapiens', 'hg19')
-        scifi = utils.parse_experiment(path.join(datadir, basedir, 'RBP', 'scifi.json'))
-        fake01 = utils.parse_experiment(path.join(datadir, basedir, 'miRNA', 'fake01.json'))
-        fake02 = utils.parse_experiment(path.join(datadir, basedir, 'miRNA', 'fake02.json'))
+        scifi = utils.parse_experiment(path.join(datadir, basedir, 'RBP', 'PARCLIP_scifi.json'))
+        fake01 = utils.parse_experiment(path.join(datadir, basedir, 'miRNA', 'miRNA_fake01.json'))
+        fake02 = utils.parse_experiment(path.join(datadir, basedir, 'miRNA', 'miRNA_fake02.json'))
         expected = {
             'mammals': {
                 'h_sapiens': {
                     'hg19': {
                         'RBP': {
-                            'scifi': scifi
+                            'PARCLIP_scifi': scifi
                         },
                         'miRNA': {
-                            'fake01': fake01,
-                            'fake02': fake02
+                            'miRNA_fake01': fake01,
+                            'miRNA_fake02': fake02
                         },
                     }
                 }
@@ -74,7 +74,7 @@ class TestListDataWithoutOptions(unittest.TestCase):
         }
 
         basedir = path.join(datadir, 'regulators', 'mammals', 'h_sapiens', 'hg19')
-        got = utils.parse_experiment(path.join(datadir, basedir, 'RBP', 'scifi.json'))
+        got = utils.parse_experiment(path.join(datadir, basedir, 'RBP', 'PARCLIP_scifi.json'))
         self.assertEqual(expected, got)
 
 
@@ -93,6 +93,6 @@ class TestListDataWithoutOptions(unittest.TestCase):
         got = utils.get_regulator_by_name("invalid", datadir=datadir)
         self.assertIsNone(got)
 
-        expected = path.join(datadir, 'regulators', 'mammals', 'h_sapiens', 'hg19', 'RBP', 'scifi')
-        got = utils.get_regulator_by_name("scifi", datadir=datadir)
+        expected = path.join(datadir, 'regulators', 'mammals', 'h_sapiens', 'hg19', 'RBP', 'PARCLIP_scifi')
+        got = utils.get_regulator_by_name("PARCLIP_scifi", datadir=datadir)
         self.assertEqual(expected, got)
