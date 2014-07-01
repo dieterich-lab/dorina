@@ -216,6 +216,18 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         self.assertEqual(str(expected), str(got))
 
 
+    def test_cleanup_intersect_multiple_bed(self):
+        """Test run._cleanup_intersect_bed() when combining more than one BED file"""
+        dirty_string = '''chr1	250	260	PARCLIP#scifi*scifi_cds~miRNA#fake01*fake01_cds	23~42	+	250~255	260~265	chr1	257	267	miRNA#fake02*fake02_cds	17	-	257	267'''
+        dirty = BedTool(dirty_string, from_string=True)
+
+        expected_string = '''chr1	257	260	PARCLIP#scifi*scifi_cds~miRNA#fake01*fake01_cds~miRNA#fake02*fake02_cds	23~42~17	.	250~255~257	260~265~267'''
+        expected = BedTool(expected_string, from_string=True)
+
+        got = run._cleanup_intersect_bed(dirty)
+        self.assertEqual(str(expected), str(got))
+
+
     def test_cleanup_intersect_gff(self):
         """Test run._cleanup_intersect_gff()"""
         dirty_string = '''chr1	doRiNA2	gene	1	1000	.	+	.	ID=gene01.01 	chr1	255	260	PARCLIP#scifi*scifi_cds~miRNA#fake01*fake01_cds	23	.	250~255	260~265'''
@@ -229,7 +241,7 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
 
 
     def test_cleanup_intersect_gff_no_merged_bed6(self):
-        """Test run._cleanup_intersect_gff()"""
+        """Test run._cleanup_intersect_gff() with a non-merged BED6 regulator"""
         dirty_string = '''chr1	doRiNA2	gene	1	1000	.	+	.	ID=gene01.01 	chr1	250	260	PARCLIP#scifi*scifi_cds	23	.'''
         dirty = BedTool(dirty_string, from_string=True)
 

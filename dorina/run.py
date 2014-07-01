@@ -87,8 +87,8 @@ def _cleanup_intersect_bed(dirty):
             # Bed9 format?
             new_start = "%s" % max(int(row[1]), int(row[9]))
             new_end = "%s" % min(int(row[2]), int(row[10]))
-            combined_start = "%s~%s" % (row[1], row[9])
-            combined_end = "%s~%s" % (row[2], row[10])
+            combined_start = "%s~%s" % (row[6], row[9])
+            combined_end = "%s~%s" % (row[7], row[10])
             new_name = "~".join([row[3], row[11]])
             new_score = "%s~%s" % (row[4], row[12])
             new_strand = row[5] if row[5] == row[13] else '.'
