@@ -50,8 +50,10 @@ def get_regulators(datadir):
                     logging.debug("No bedfile for experiment %r" % experiment_path)
                     continue
 
-                experiment_dict = parse_experiment(experiment_path)
-                regulator_dict[experiment_root] = experiment_dict
+                experiments = parse_experiment(experiment_path)
+                for experiment_dict in experiments:
+                    experiment_dict['file'] = experiment_path
+                    regulator_dict[experiment_dict['id']] = experiment_dict
 
     return walk_assembly_tree(datadir, 'regulators',parse_func)
 
@@ -125,7 +127,6 @@ def get_regulator_by_name(name, datadir):
             for assembly, assembly_dir in species_dir.items():
                 for regulator, regulator_dir in assembly_dir.items():
                     if name in regulator_dir:
-                        return path.join(datadir, 'regulators',
-                                clade, species, assembly, regulator, name)
+                        return path.splitext(regulator_dir[name]['file'])[0]
 
     return None

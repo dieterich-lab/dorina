@@ -168,7 +168,14 @@ def _get_genome_bedtool(genome_name, region, datadir=None):
 
 def _get_regulator_bedtool(regulator_name, datadir=None):
     """get the bedtool object for a regulator"""
-    return BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir))
+    def filter_func(rec, name):
+        if '_' in name:
+            filter_name = '_'.join(name.split('_')[1:])
+        else:
+            filter_name = name
+        res = filter_name in rec.name
+        return res
+    return BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir)).filter(filter_func, regulator_name).saveas()
 
 
 def _parse_results(bedtool_results):

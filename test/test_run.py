@@ -55,15 +55,15 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
     def test_analyse_all_regions_seta_any(self):
         """Test run.analyse() on all regions with two regulators with match to any regulator"""
         expected = [
-            dict(track="fake01", gene="gene01.01", data_source='miRNA', score=5, site="fake01_cds",
+            dict(track="fake01", gene="gene01.01", data_source='PICTAR', score=5, site="fake01_cds",
                  location="chr1:255-265", strand="+"),
-            dict(track="fake02", gene="gene01.02", data_source='miRNA', score=5, site="fake02_intron",
+            dict(track="fake02", gene="gene01.02", data_source='PICTAR', score=5, site="fake02_intron",
                  location="chr1:2450-2460", strand="+")
         ]
-        got = run.analyse('hg19', set_a=['miRNA_fake01', 'miRNA_fake02'], match_a='any', region_a='any', datadir=datadir)
+        got = run.analyse('hg19', set_a=['PICTAR_fake01', 'PICTAR_fake02'], match_a='any', region_a='any', datadir=datadir)
         self.assertEqual(expected, got)
 
-        got = run.analyse('hg19', set_a=['miRNA_fake01', 'miRNA_fake02'], datadir=datadir)
+        got = run.analyse('hg19', set_a=['PICTAR_fake01', 'PICTAR_fake02'], datadir=datadir)
         self.assertEqual(expected, got)
 
     def test_analyse_all_regions_seta_all(self):
@@ -71,13 +71,13 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         expected = [
             dict(track="scifi", gene="gene01.01", data_source='PARCLIP', score=5, site="scifi_cds",
                  location="chr1:250-260", strand="+"),
-            dict(track="fake01", gene="gene01.01", data_source='miRNA', score=5, site="fake01_cds",
+            dict(track="fake01", gene="gene01.01", data_source='PICTAR', score=5, site="fake01_cds",
                  location="chr1:255-265", strand="+")
         ]
-        got = run.analyse('hg19', set_a=['PARCLIP_scifi', 'miRNA_fake01'], match_a='all', region_a='any', datadir=datadir)
+        got = run.analyse('hg19', set_a=['PARCLIP_scifi', 'PICTAR_fake01'], match_a='all', region_a='any', datadir=datadir)
         self.assertEqual(expected, got)
 
-        got = run.analyse('hg19', set_a=['PARCLIP_scifi', 'miRNA_fake01'], match_a='all', datadir=datadir)
+        got = run.analyse('hg19', set_a=['PARCLIP_scifi', 'PICTAR_fake01'], match_a='all', datadir=datadir)
         self.assertEqual(expected, got)
 
     def test_analyse_all_regions_seta_and_setb(self):
@@ -85,11 +85,11 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         expected = [
             dict(track="scifi", gene="gene01.01", data_source='PARCLIP', score=5, site="scifi_cds",
                  location="chr1:250-260", strand="+"),
-            dict(track="fake01", gene="gene01.01", data_source='miRNA', score=5, site="fake01_cds",
+            dict(track="fake01", gene="gene01.01", data_source='PICTAR', score=5, site="fake01_cds",
                  location="chr1:255-265", strand="+")
         ]
         got = run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any', region_a='any',
-                          set_b=['miRNA_fake01'], match_b='any', region_b='any',
+                          set_b=['PICTAR_fake01'], match_b='any', region_b='any',
                           combine='and', datadir=datadir)
         self.assertEqual(expected, got)
 
@@ -110,7 +110,7 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
              'site': 'scifi_intron',
              'strand': '+',
              'track': 'scifi'},
-            {'data_source': 'miRNA',
+            {'data_source': 'PICTAR',
              'gene': 'gene01.01',
              'location': 'chr1:255-265',
              'score': 5,
@@ -119,7 +119,7 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
              'track': 'fake01'}
      ]
         got = run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any', region_a='any',
-                          set_b=['miRNA_fake01'], match_b='any', region_b='any',
+                          set_b=['PICTAR_fake01'], match_b='any', region_b='any',
                           combine='or', datadir=datadir)
         self.assertEqual(expected, got)
 
@@ -135,7 +135,7 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
              'track': 'scifi'}
         ]
         got = run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any', region_a='any',
-                          set_b=['miRNA_fake01'], match_b='any', region_b='any',
+                          set_b=['PICTAR_fake01'], match_b='any', region_b='any',
                           combine='xor', datadir=datadir)
         self.assertEqual(expected, got)
 
@@ -151,7 +151,7 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
              'track': 'scifi'}
         ]
         got = run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any', region_a='any',
-                          set_b=['miRNA_fake01'], match_b='any', region_b='any',
+                          set_b=['PICTAR_fake01'], match_b='any', region_b='any',
                           combine='not', datadir=datadir)
         self.assertEqual(expected, got)
 
@@ -194,10 +194,10 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
 
     def test_cleanup_intersect_bed(self):
         """Test run._cleanup_intersect_bed()"""
-        dirty_string = '''chr1	250	260	PARCLIP#scifi*scifi_cds	23	+	250	260	chr1	255	265	miRNA#fake01*fake01_cds	42	-	255	265'''
+        dirty_string = '''chr1	250	260	PARCLIP#scifi*scifi_cds	23	+	250	260	chr1	255	265	PICTAR#fake01*fake01_cds	42	-	255	265'''
         dirty = BedTool(dirty_string, from_string=True)
 
-        expected_string = '''chr1	255	260	PARCLIP#scifi*scifi_cds~miRNA#fake01*fake01_cds	23~42	.	250~255	260~265'''
+        expected_string = '''chr1	255	260	PARCLIP#scifi*scifi_cds~PICTAR#fake01*fake01_cds	23~42	.	250~255	260~265'''
         expected = BedTool(expected_string, from_string=True)
 
         got = run._cleanup_intersect_bed(dirty)
@@ -206,10 +206,10 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
 
     def test_cleanup_intersect_bed6(self):
         """Test run._cleanup_intersect_bed() with bed6 format files"""
-        dirty_string = '''chr1	250	260	PARCLIP#scifi*scifi_cds	23	+	chr1	255	265	miRNA#fake01*fake01_cds	42	-'''
+        dirty_string = '''chr1	250	260	PARCLIP#scifi*scifi_cds	23	+	chr1	255	265	PICTAR#fake01*fake01_cds	42	-'''
         dirty = BedTool(dirty_string, from_string=True)
 
-        expected_string = '''chr1	255	260	PARCLIP#scifi*scifi_cds~miRNA#fake01*fake01_cds	23~42	.	250~255	260~265'''
+        expected_string = '''chr1	255	260	PARCLIP#scifi*scifi_cds~PICTAR#fake01*fake01_cds	23~42	.	250~255	260~265'''
         expected = BedTool(expected_string, from_string=True)
 
         got = run._cleanup_intersect_bed(dirty)
@@ -218,10 +218,10 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
 
     def test_cleanup_intersect_multiple_bed(self):
         """Test run._cleanup_intersect_bed() when combining more than one BED file"""
-        dirty_string = '''chr1	250	260	PARCLIP#scifi*scifi_cds~miRNA#fake01*fake01_cds	23~42	+	250~255	260~265	chr1	257	267	miRNA#fake02*fake02_cds	17	-	257	267'''
+        dirty_string = '''chr1	250	260	PARCLIP#scifi*scifi_cds~PICTAR#fake01*fake01_cds	23~42	+	250~255	260~265	chr1	257	267	PICTAR#fake02*fake02_cds	17	-	257	267'''
         dirty = BedTool(dirty_string, from_string=True)
 
-        expected_string = '''chr1	257	260	PARCLIP#scifi*scifi_cds~miRNA#fake01*fake01_cds~miRNA#fake02*fake02_cds	23~42~17	.	250~255~257	260~265~267'''
+        expected_string = '''chr1	257	260	PARCLIP#scifi*scifi_cds~PICTAR#fake01*fake01_cds~PICTAR#fake02*fake02_cds	23~42~17	.	250~255~257	260~265~267'''
         expected = BedTool(expected_string, from_string=True)
 
         got = run._cleanup_intersect_bed(dirty)
@@ -230,10 +230,10 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
 
     def test_cleanup_intersect_gff(self):
         """Test run._cleanup_intersect_gff()"""
-        dirty_string = '''chr1	doRiNA2	gene	1	1000	.	+	.	ID=gene01.01 	chr1	255	260	PARCLIP#scifi*scifi_cds~miRNA#fake01*fake01_cds	23	.	250~255	260~265'''
+        dirty_string = '''chr1	doRiNA2	gene	1	1000	.	+	.	ID=gene01.01 	chr1	255	260	PARCLIP#scifi*scifi_cds~PICTAR#fake01*fake01_cds	23	.	250~255	260~265'''
         dirty = BedTool(dirty_string, from_string=True)
 
-        expected_string = '''chr1	doRiNA2	gene	1	1000    .	+	.	ID=gene01.01;regulator=PARCLIP#scifi*scifi_cds~miRNA#fake01*fake01_cds;score=23;start=250~255;end=260~265'''
+        expected_string = '''chr1	doRiNA2	gene	1	1000    .	+	.	ID=gene01.01;regulator=PARCLIP#scifi*scifi_cds~PICTAR#fake01*fake01_cds;score=23;start=250~255;end=260~265'''
         expected = BedTool(expected_string, from_string=True)
 
         got = run._cleanup_intersect_gff(dirty)
@@ -254,13 +254,13 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
 
     def test_parse_results(self):
         """Test run._parse_results()"""
-        given_string = '''chr1	doRiNA2	gene	1	1000    .	+	.	ID=gene01.01;regulator=PARCLIP#scifi*scifi_cds~miRNA#fake01*fake01_cds;score=23~42;start=250~255;end=260~265'''
+        given_string = '''chr1	doRiNA2	gene	1	1000    .	+	.	ID=gene01.01;regulator=PARCLIP#scifi*scifi_cds~PICTAR#fake01*fake01_cds;score=23~42;start=250~255;end=260~265'''
         given = BedTool(given_string, from_string=True)
 
         expected = [
             dict(track="scifi", gene="gene01.01", data_source='PARCLIP', score=23, site="scifi_cds",
                  location="chr1:250-260", strand="+"),
-            dict(track="fake01", gene="gene01.01", data_source='miRNA', score=42, site="fake01_cds",
+            dict(track="fake01", gene="gene01.01", data_source='PICTAR', score=42, site="fake01_cds",
                  location="chr1:255-265", strand="+")
         ]
 

@@ -33,9 +33,13 @@ class TestListDataWithoutOptions(unittest.TestCase):
     def test_get_regulators(self):
         """Test utils.get_regulators()"""
         basedir = path.join(datadir, 'regulators', 'mammals', 'h_sapiens', 'hg19')
-        scifi = utils.parse_experiment(path.join(datadir, basedir, 'RBP', 'PARCLIP_scifi.json'))
-        fake01 = utils.parse_experiment(path.join(datadir, basedir, 'miRNA', 'miRNA_fake01.json'))
-        fake02 = utils.parse_experiment(path.join(datadir, basedir, 'miRNA', 'miRNA_fake02.json'))
+        scifi_path = path.join(datadir, basedir, 'RBP', 'PARCLIP_scifi.json')
+        scifi = utils.parse_experiment(scifi_path)[0]
+        scifi['file'] = scifi_path
+        fake_path = path.join(datadir, basedir, 'miRNA', 'PICTAR_fake.json')
+        fake01, fake02 = utils.parse_experiment(fake_path)
+        fake01['file'] = fake_path
+        fake02['file'] = fake_path
         expected = {
             'mammals': {
                 'h_sapiens': {
@@ -44,8 +48,8 @@ class TestListDataWithoutOptions(unittest.TestCase):
                             'PARCLIP_scifi': scifi
                         },
                         'miRNA': {
-                            'miRNA_fake01': fake01,
-                            'miRNA_fake02': fake02
+                            'PICTAR_fake01': fake01,
+                            'PICTAR_fake02': fake02
                         },
                     }
                 }
@@ -53,12 +57,15 @@ class TestListDataWithoutOptions(unittest.TestCase):
         }
 
         got = utils.get_regulators(datadir=datadir)
+        self.maxDiff = None
         self.assertEqual(expected, got)
 
 
     def test_parse_experiment(self):
         """Test utils.parse_experiment()"""
-        expected = {
+        expected = [{
+            'id': 'PARCLIP_scifi',
+            'experiment': 'PARCLIP',
             'summary': 'Experimental summary',
             'description': 'Long description here',
             'methods': 'Experimental methods section',
@@ -71,7 +78,7 @@ class TestListDataWithoutOptions(unittest.TestCase):
                   'pubmed': 'http://www.ncbi.nlm.nih.gov/pubmed/12345678'
                 }
             ]
-        }
+        }]
 
         basedir = path.join(datadir, 'regulators', 'mammals', 'h_sapiens', 'hg19')
         got = utils.parse_experiment(path.join(datadir, basedir, 'RBP', 'PARCLIP_scifi.json'))
@@ -95,4 +102,8 @@ class TestListDataWithoutOptions(unittest.TestCase):
 
         expected = path.join(datadir, 'regulators', 'mammals', 'h_sapiens', 'hg19', 'RBP', 'PARCLIP_scifi')
         got = utils.get_regulator_by_name("PARCLIP_scifi", datadir=datadir)
+        self.assertEqual(expected, got)
+
+        expected = path.join(datadir, 'regulators', 'mammals', 'h_sapiens', 'hg19', 'miRNA', 'PICTAR_fake')
+        got = utils.get_regulator_by_name("PICTAR_fake02", datadir=datadir)
         self.assertEqual(expected, got)
