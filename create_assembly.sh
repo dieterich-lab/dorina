@@ -5,7 +5,7 @@ GTF_FILE=${1}
 ASSEMBLY=${GTF_FILE/\.gtf/}
 
 mkdir ${ASSEMBLY}
-gtf2gff3 ${GTF_FILE} | grep -v "^chr[0-9XYMUn]\{1,2\}_[A-Za-z0-9]\{1,\}" > ${ASSEMBLY}/${ASSEMBLY}.gff
+gtf2gff3 ${GTF_FILE} > ${ASSEMBLY}/${ASSEMBLY}.gff
 
 pushd ${ASSEMBLY} > /dev/null
 grep gene ${ASSEMBLY}.gff > all.gff
