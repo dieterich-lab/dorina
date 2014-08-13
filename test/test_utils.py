@@ -12,16 +12,14 @@ class TestListDataWithoutOptions(unittest.TestCase):
     def test_get_genomes(self):
         """Test utils.get_genomes()"""
         expected = {
-            'mammals': {
-                'h_sapiens': {
-                    'hg19': {
-                        'all': True,
-                        'cds': True,
-                        '3_utr': True,
-                        '5_utr': True,
-                        'intron': True,
-                        'intergenic': True
-                    }
+            'h_sapiens': {
+                'hg19': {
+                    'all': True,
+                    'cds': True,
+                    '3_utr': True,
+                    '5_utr': True,
+                    'intron': True,
+                    'intergenic': True
                 }
             }
         }
@@ -32,7 +30,7 @@ class TestListDataWithoutOptions(unittest.TestCase):
 
     def test_get_regulators(self):
         """Test utils.get_regulators()"""
-        basedir = path.join(datadir, 'regulators', 'mammals', 'h_sapiens', 'hg19')
+        basedir = path.join(datadir, 'regulators', 'h_sapiens', 'hg19')
         scifi_path = path.join(datadir, basedir, 'RBP', 'PARCLIP_scifi.json')
         scifi = utils.parse_experiment(scifi_path)[0]
         scifi['file'] = scifi_path
@@ -41,17 +39,15 @@ class TestListDataWithoutOptions(unittest.TestCase):
         fake01['file'] = fake_path
         fake02['file'] = fake_path
         expected = {
-            'mammals': {
-                'h_sapiens': {
-                    'hg19': {
-                        'RBP': {
-                            'PARCLIP_scifi': scifi
-                        },
-                        'miRNA': {
-                            'PICTAR_fake01': fake01,
-                            'PICTAR_fake02': fake02
-                        },
-                    }
+            'h_sapiens': {
+                'hg19': {
+                    'RBP': {
+                        'PARCLIP_scifi': scifi
+                    },
+                    'miRNA': {
+                        'PICTAR_fake01': fake01,
+                        'PICTAR_fake02': fake02
+                    },
                 }
             }
         }
@@ -80,7 +76,7 @@ class TestListDataWithoutOptions(unittest.TestCase):
             ]
         }]
 
-        basedir = path.join(datadir, 'regulators', 'mammals', 'h_sapiens', 'hg19')
+        basedir = path.join(datadir, 'regulators', 'h_sapiens', 'hg19')
         got = utils.parse_experiment(path.join(datadir, basedir, 'RBP', 'PARCLIP_scifi.json'))
         self.assertEqual(expected, got)
 
@@ -90,7 +86,7 @@ class TestListDataWithoutOptions(unittest.TestCase):
         got = utils.get_genome_by_name("invalid", datadir=datadir)
         self.assertIsNone(got)
 
-        expected = path.join(datadir, 'genomes', 'mammals', 'h_sapiens', 'hg19')
+        expected = path.join(datadir, 'genomes', 'h_sapiens', 'hg19')
         got = utils.get_genome_by_name("hg19", datadir=datadir)
         self.assertEqual(expected, got)
 
@@ -100,10 +96,10 @@ class TestListDataWithoutOptions(unittest.TestCase):
         got = utils.get_regulator_by_name("invalid", datadir=datadir)
         self.assertIsNone(got)
 
-        expected = path.join(datadir, 'regulators', 'mammals', 'h_sapiens', 'hg19', 'RBP', 'PARCLIP_scifi')
+        expected = path.join(datadir, 'regulators', 'h_sapiens', 'hg19', 'RBP', 'PARCLIP_scifi')
         got = utils.get_regulator_by_name("PARCLIP_scifi", datadir=datadir)
         self.assertEqual(expected, got)
 
-        expected = path.join(datadir, 'regulators', 'mammals', 'h_sapiens', 'hg19', 'miRNA', 'PICTAR_fake')
+        expected = path.join(datadir, 'regulators', 'h_sapiens', 'hg19', 'miRNA', 'PICTAR_fake')
         got = utils.get_regulator_by_name("PICTAR_fake02", datadir=datadir)
         self.assertEqual(expected, got)

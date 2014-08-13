@@ -75,33 +75,25 @@ def walk_assembly_tree(datadir, root_dir, parse_func):
 
     root = path.join(datadir, root_dir)
 
-    for clade in os.listdir(root):
-        clade_path = path.join(root, clade)
-        if not path.isdir(clade_path):
-            logging.debug("skipping non-directory %r" % clade_path)
+    for species in os.listdir(root):
+        species_path = path.join(root, species)
+        if not path.isdir(species_path):
+            logging.debug("skipping non-directory %r" % species_path)
             continue
-        clade_dict = {}
-        genomes[clade] = clade_dict
 
-        for species in os.listdir(clade_path):
-            species_path = path.join(clade_path, species)
-            if not path.isdir(species_path):
-                logging.debug("skipping non-directory %r" % species_path)
+        species_dict = {}
+        genomes[species] = species_dict
+
+        for assembly in os.listdir(species_path):
+            assembly_path = path.join(species_path, assembly)
+            if not path.isdir(assembly_path):
+                logging.debug("skipping non-directory %r" % assembly_path)
                 continue
 
-            species_dict = {}
-            clade_dict[species] = species_dict
+            assembly_dict = {}
+            species_dict[assembly] = assembly_dict
 
-            for assembly in os.listdir(species_path):
-                assembly_path = path.join(species_path, assembly)
-                if not path.isdir(assembly_path):
-                    logging.debug("skipping non-directory %r" % assembly_path)
-                    continue
-
-                assembly_dict = {}
-                species_dict[assembly] = assembly_dict
-
-                parse_func(assembly_path, assembly_dict)
+            parse_func(assembly_path, assembly_dict)
 
     return genomes
 
@@ -110,10 +102,9 @@ def get_genome_by_name(name, datadir):
     """Take a genome name and return the path to the genome directory"""
     genomes = get_genomes(datadir=datadir)
 
-    for clade, clade_dir in genomes.items():
-        for species, species_dir in clade_dir.items():
-            if name in species_dir:
-                return path.join(datadir, 'genomes', clade, species, name)
+    for species, species_dir in genomes.items():
+        if name in species_dir:
+            return path.join(datadir, 'genomes', species, name)
 
     return None
 
@@ -122,11 +113,10 @@ def get_regulator_by_name(name, datadir):
     """Take a regulator name and return the path to the regulator basename without file extension"""
     regulators = get_regulators(datadir=datadir)
 
-    for clade, clade_dir in regulators.items():
-        for species, species_dir in clade_dir.items():
-            for assembly, assembly_dir in species_dir.items():
-                for regulator, regulator_dir in assembly_dir.items():
-                    if name in regulator_dir:
-                        return path.splitext(regulator_dir[name]['file'])[0]
+    for species, species_dir in regulators.items():
+        for assembly, assembly_dir in species_dir.items():
+            for regulator, regulator_dir in assembly_dir.items():
+                if name in regulator_dir:
+                    return path.splitext(regulator_dir[name]['file'])[0]
 
     return None
