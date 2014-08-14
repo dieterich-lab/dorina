@@ -68,7 +68,7 @@ def parse_experiment(filename):
     return experiment
 
 def walk_assembly_tree(datadir, root_dir, parse_func):
-    """Wa;k a directory structure containg clade, species, assembly
+    """Walk a directory structure containg clade, species, assembly
 
     Call parse_func() for every assembly directory"""
     genomes = {}
@@ -81,8 +81,14 @@ def walk_assembly_tree(datadir, root_dir, parse_func):
             logging.debug("skipping non-directory %r" % species_path)
             continue
 
+        description_file = path.join(species_path, 'description.json')
         species_dict = {}
-        genomes[species] = species_dict
+        try:
+            with open(description_file, 'r') as fh:
+                genomes[species] = json.load(fh)
+                genomes[species]['assemblies'] = species_dict
+        except IOError:
+            genomes[species] = species_dict
 
         for assembly in os.listdir(species_path):
             assembly_path = path.join(species_path, assembly)
@@ -103,7 +109,7 @@ def get_genome_by_name(name, datadir):
     genomes = get_genomes(datadir=datadir)
 
     for species, species_dir in genomes.items():
-        if name in species_dir:
+        if name in species_dir['assemblies']:
             return path.join(datadir, 'genomes', species, name)
 
     return None

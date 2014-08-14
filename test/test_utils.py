@@ -9,17 +9,27 @@ from dorina import utils
 datadir = path.join(path.dirname(path.abspath(__file__)), 'data')
 
 class TestListDataWithoutOptions(unittest.TestCase):
+    def setUp(self):
+        self.maxDiff = None
+
+
     def test_get_genomes(self):
         """Test utils.get_genomes()"""
         expected = {
             'h_sapiens': {
-                'hg19': {
-                    'all': True,
-                    'cds': True,
-                    '3_utr': True,
-                    '5_utr': True,
-                    'intron': True,
-                    'intergenic': True
+                'id': 'h_sapiens',
+                'label': 'Human',
+                'scientific': 'Homo sapiens',
+                'weight': 10,
+                'assemblies': {
+                    'hg19': {
+                        'all': True,
+                        'cds': True,
+                        '3_utr': True,
+                        '5_utr': True,
+                        'intron': True,
+                        'intergenic': True
+                    }
                 }
             }
         }

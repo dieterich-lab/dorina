@@ -107,7 +107,7 @@ def list_genomes(datadir):
     print "------------------"
     for species, species_dict in genomes.items():
         print "\t%s" % species
-        for assembly, assembly_dict in species_dict.items():
+        for assembly, assembly_dict in species_dict['assemblies'].items():
             print "\t\t%s" % assembly
             gffs = assembly_dict.items()
             gffs.sort(key=lambda x: x[0])
