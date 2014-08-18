@@ -113,3 +113,7 @@ class TestListDataWithoutOptions(unittest.TestCase):
         expected = path.join(datadir, 'regulators', 'h_sapiens', 'hg19', 'miRNA', 'PICTAR_fake')
         got = utils.get_regulator_by_name("PICTAR_fake02", datadir=datadir)
         self.assertEqual(expected, got)
+
+        expected = path.join(datadir, 'manual')
+        got = utils.get_regulator_by_name(expected, datadir)
+        self.assertEqual(expected, got)

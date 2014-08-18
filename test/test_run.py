@@ -191,6 +191,11 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         got = run._get_regulator_bedtool('PARCLIP_scifi', datadir)
         self.assertEqual(expected, got)
 
+        manual = path.join(datadir, 'manual.bed')
+        expected = BedTool(manual)
+        got = run._get_regulator_bedtool(manual, datadir)
+        self.assertEqual(expected, got)
+
 
     def test_cleanup_intersect_bed(self):
         """Test run._cleanup_intersect_bed()"""

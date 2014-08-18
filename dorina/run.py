@@ -1,5 +1,6 @@
 # vim: set fileencoding=utf-8 :
 
+import os
 import logging
 from os import path
 from cStringIO import StringIO
@@ -175,6 +176,10 @@ def _get_regulator_bedtool(regulator_name, datadir=None):
             filter_name = name
         res = filter_name in rec.name
         return res
+
+    if os.sep in regulator_name:
+        return BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir))
+
     return BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir)).filter(filter_func, regulator_name).saveas()
 
 

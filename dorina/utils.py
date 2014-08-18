@@ -117,6 +117,10 @@ def get_genome_by_name(name, datadir):
 
 def get_regulator_by_name(name, datadir):
     """Take a regulator name and return the path to the regulator basename without file extension"""
+
+    if os.sep in name:
+        return path.splitext(name)[0]
+
     regulators = get_regulators(datadir=datadir)
 
     for species, species_dir in regulators.items():
