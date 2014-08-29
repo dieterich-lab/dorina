@@ -155,6 +155,25 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
                           combine='not', datadir=datadir)
         self.assertEqual(expected, got)
 
+
+    def test_add_slop(self):
+        """Test run._add_slop()"""
+        slop_string = """chr1   0   560 PARCLIP#scifi*scifi_cds 5   +   250 260
+        chr1    950 1560    PARCLIP#scifi*scifi_intergenic  5   .   1250    1260
+        chr1    2050    2660    PARCLIP#scifi*scifi_intron  5   +   2350    2360
+"""
+        expected = BedTool(slop_string, from_string=True)
+        got = run._add_slop(BedTool(run._get_regulator_bedtool('PARCLIP_scifi', datadir)),
+                            'hg19', 300, datadir)
+        self.assertEqual(expected, got)
+
+    def test_get_genome_chromfile(self):
+        """Test run._get_genome_chromfile()"""
+        expected = path.join(utils.get_genome_by_name('hg19', datadir=datadir), 'hg19.genome')
+        got = run._get_genome_chromfile('hg19', datadir=datadir)
+        self.assertEqual(expected, got)
+
+
     def test_get_genome_bedtool(self):
         """Test run._get_genome_bedtool()"""
         # should raise a ValueError for an invalid region

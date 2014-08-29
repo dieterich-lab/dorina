@@ -10,23 +10,26 @@ from dorina import utils
 
 def analyse(genome, set_a, match_a='any', region_a='any',
             set_b=None, match_b='any', region_b='any',
-            combine='or', genes=None, datadir=None):
+            combine='or', genes=None, slop=0,
+            datadir=None):
     """Run doRiNA analysis"""
     logging.debug("analyse(%r, %r(%s))" % (genome, set_a, match_a))
 
     return _parse_results(_analyse(genome, set_a, match_a, region_a,
                                    set_b, match_b, region_b, combine,
-                                   genes, datadir))
+                                   genes, slop, datadir))
 
 
 def _analyse(genome, set_a, match_a='any', region_a='any',
              set_b=None, match_b='any', region_b='any', combine='or',
-             genes=None, datadir=None):
+             genes=None, slop=0, datadir=None):
     """Run doRiNA analysis, internal logic"""
     logging.debug("analyse(%r, %r(%s))" % (genome, set_a, match_a))
 
     genome_bed_a = _get_genome_bedtool(genome, region_a, datadir, genes)
     regulators_a = map(lambda x: _get_regulator_bedtool(x, datadir), set_a)
+    if slop > 0:
+        regulators_a = map(lambda x: _add_slop(x, slop, genome, datadir), regulators_a)
 
     if match_a == 'any':
         regulator = _merge_regulators(regulators_a)
@@ -38,6 +41,8 @@ def _analyse(genome, set_a, match_a='any', region_a='any',
     if set_b is not None:
         genome_bed_b = _get_genome_bedtool(genome, region_b, datadir, genes)
         regulators_b = map(lambda x: _get_regulator_bedtool(x, datadir), set_b)
+        if slop > 0:
+            regulators_b = map(lambda x: _add_slop(x, slop, genome, datadir), regulators_b)
 
         if match_b == 'any':
             regulator = _merge_regulators(regulators_b)
@@ -147,6 +152,18 @@ def _cleanup_intersect_gff_gff(dirty):
         clean_string += new_row
 
     return BedTool(clean_string, from_string=True)
+
+
+def _add_slop(feature, genome_name, slop, datadir=None):
+    """Add specified slop before and after a regulator"""
+    return feature.slop(g=_get_genome_chromfile(genome_name, datadir), b=slop)
+
+
+def _get_genome_chromfile(genome_name, datadir=None):
+    """Get the path to the .genome file listing chromosome sizes"""
+    return path.join(utils.get_genome_by_name(genome_name, datadir),
+                     "{}.genome".format(genome_name))
+
 
 def _get_genome_bedtool(genome_name, region, datadir=None, genes=None):
     """get the bedtool object for a genome depending on the name and the region"""
