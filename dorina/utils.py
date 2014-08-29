@@ -24,38 +24,29 @@ def get_genomes(datadir):
 def get_regulators(datadir):
     """Get all available regulators"""
     def parse_func(root, regulators):
-        for regulator in os.listdir(root):
-            regulator_path = path.join(root, regulator)
-            if not path.isdir(regulator_path):
-                logging.debug("skipping non-dir %r" % regulator_path)
+        for experiment in os.listdir(root):
+            experiment_path = path.join(root, experiment)
+            if not path.isfile(experiment_path):
+                logging.debug("skipping non-file %r" % experiment_path)
                 continue
 
-            regulator_dict = {}
-            regulators[regulator] = regulator_dict
+            experiment_root, experiment_ext = path.splitext(experiment)
+            if not experiment_ext.lower() == '.json':
+                logging.debug("skipping non-JSON file %r" % experiment_path)
+                continue
 
-            for experiment in os.listdir(regulator_path):
-                experiment_path = path.join(regulator_path, experiment)
-                if not path.isfile(experiment_path):
-                    logging.debug("skipping non-file %r" % experiment_path)
-                    continue
+            bedfile = path.join(root, '%s.%s' % (experiment_root, 'bed'))
+            logging.debug("looking for %r" % bedfile)
+            if not path.isfile(bedfile):
+                logging.debug("No bedfile for experiment %r" % experiment_path)
+                continue
 
-                experiment_root, experiment_ext = path.splitext(experiment)
-                if not experiment_ext.lower() == '.json':
-                    logging.debug("skipping non-JSON file %r" % experiment_path)
-                    continue
+            experiments = parse_experiment(experiment_path)
+            for experiment_dict in experiments:
+                experiment_dict['file'] = experiment_path
+                regulators[experiment_dict['id']] = experiment_dict
 
-                bedfile = path.join(regulator_path, '%s.%s' % (experiment_root, 'bed'))
-                logging.debug("looking for %r" % bedfile)
-                if not path.isfile(bedfile):
-                    logging.debug("No bedfile for experiment %r" % experiment_path)
-                    continue
-
-                experiments = parse_experiment(experiment_path)
-                for experiment_dict in experiments:
-                    experiment_dict['file'] = experiment_path
-                    regulator_dict[experiment_dict['id']] = experiment_dict
-
-    return walk_assembly_tree(datadir, 'regulators',parse_func)
+    return walk_assembly_tree(datadir, 'regulators', parse_func)
 
 
 def parse_experiment(filename):
@@ -125,8 +116,7 @@ def get_regulator_by_name(name, datadir):
 
     for species, species_dir in regulators.items():
         for assembly, assembly_dir in species_dir.items():
-            for regulator, regulator_dir in assembly_dir.items():
-                if name in regulator_dir:
-                    return path.splitext(regulator_dir[name]['file'])[0]
+            if name in assembly_dir:
+                return path.splitext(assembly_dir[name]['file'])[0]
 
     return None
