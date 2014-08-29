@@ -10,20 +10,22 @@ from dorina import utils
 
 def analyse(genome, set_a, match_a='any', region_a='any',
             set_b=None, match_b='any', region_b='any',
-            combine='or', datadir=None):
+            combine='or', genes=None, datadir=None):
     """Run doRiNA analysis"""
     logging.debug("analyse(%r, %r(%s))" % (genome, set_a, match_a))
 
     return _parse_results(_analyse(genome, set_a, match_a, region_a,
-                                   set_b, match_b, region_b, combine, datadir))
+                                   set_b, match_b, region_b, combine,
+                                   genes, datadir))
 
 
 def _analyse(genome, set_a, match_a='any', region_a='any',
-             set_b=None, match_b='any', region_b='any', combine='or', datadir=None):
+             set_b=None, match_b='any', region_b='any', combine='or',
+             genes=None, datadir=None):
     """Run doRiNA analysis, internal logic"""
     logging.debug("analyse(%r, %r(%s))" % (genome, set_a, match_a))
 
-    genome_bed_a = _get_genome_bedtool(genome, region_a, datadir)
+    genome_bed_a = _get_genome_bedtool(genome, region_a, datadir, genes)
     regulators_a = map(lambda x: _get_regulator_bedtool(x, datadir), set_a)
 
     if match_a == 'any':
@@ -34,7 +36,7 @@ def _analyse(genome, set_a, match_a='any', region_a='any',
     result_a = _cleanup_intersect_gff(genome_bed_a.intersect(regulator, wa=True, wb=True))
 
     if set_b is not None:
-        genome_bed_b = _get_genome_bedtool(genome, region_b, datadir)
+        genome_bed_b = _get_genome_bedtool(genome, region_b, datadir, genes)
         regulators_b = map(lambda x: _get_regulator_bedtool(x, datadir), set_b)
 
         if match_b == 'any':
@@ -146,7 +148,7 @@ def _cleanup_intersect_gff_gff(dirty):
 
     return BedTool(clean_string, from_string=True)
 
-def _get_genome_bedtool(genome_name, region, datadir=None):
+def _get_genome_bedtool(genome_name, region, datadir=None, genes=None):
     """get the bedtool object for a genome depending on the name and the region"""
     genome = utils.get_genome_by_name(genome_name, datadir)
     if region == "any":
@@ -164,8 +166,10 @@ def _get_genome_bedtool(genome_name, region, datadir=None):
     else:
         raise ValueError("Invalid region: %r" % region)
 
-    return BedTool(filename)
-
+    if genes is None or 'all' in genes:
+        return BedTool(filename)
+    else:
+        return BedTool(filename).filter(lambda x: x.name in genes).saveas()
 
 def _get_regulator_bedtool(regulator_name, datadir=None):
     """get the bedtool object for a regulator"""

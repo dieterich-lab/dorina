@@ -184,6 +184,11 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         got = run._get_genome_bedtool('hg19', 'intergenic', datadir)
         self.assertEqual(expected, got)
 
+        expected = BedTool(path.join(utils.get_genome_by_name('hg19', datadir), 'all.gff')).filter(
+                lambda x: x.name == "gene01.02").saveas()
+        got = run._get_genome_bedtool('hg19', 'any', datadir, genes=['gene01.02'])
+        self.assertEqual(expected, got)
+
 
     def test_get_regulator_bedtool(self):
         """Test run._get_regulator_bedtool()"""
