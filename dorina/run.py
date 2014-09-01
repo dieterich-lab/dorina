@@ -29,7 +29,7 @@ def _analyse(genome, set_a, match_a='any', region_a='any',
     genome_bed_a = _get_genome_bedtool(genome, region_a, datadir, genes)
     regulators_a = map(lambda x: _get_regulator_bedtool(x, datadir), set_a)
     if slop > 0:
-        regulators_a = map(lambda x: _add_slop(x, slop, genome, datadir), regulators_a)
+        regulators_a = map(lambda x: _add_slop(x, genome, slop, datadir), regulators_a)
 
     if match_a == 'any':
         regulator = _merge_regulators(regulators_a)
@@ -42,7 +42,7 @@ def _analyse(genome, set_a, match_a='any', region_a='any',
         genome_bed_b = _get_genome_bedtool(genome, region_b, datadir, genes)
         regulators_b = map(lambda x: _get_regulator_bedtool(x, datadir), set_b)
         if slop > 0:
-            regulators_b = map(lambda x: _add_slop(x, slop, genome, datadir), regulators_b)
+            regulators_b = map(lambda x: _add_slop(x, genome, slop, datadir), regulators_b)
 
         if match_b == 'any':
             regulator = _merge_regulators(regulators_b)
