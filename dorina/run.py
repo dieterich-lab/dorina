@@ -222,8 +222,10 @@ def _parse_results(bedtool_results):
             strand = res.strand
             score = int(scores[i])
             location = "%s:%s-%s" % (res.chrom, start, end)
-            results.append(dict(track=track, gene=gene, data_source=data_source,
-                            score=score, site=site, location=location, strand=strand))
+            new_res = dict(track=track, gene=gene, data_source=data_source,
+                           score=score, site=site, location=location, strand=strand)
+            if new_res not in results:
+                results.append(new_res)
 
     return results
 

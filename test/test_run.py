@@ -296,3 +296,22 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         got = run._parse_results(given)
 
         self.assertEqual(expected, got)
+
+    def test_parse_results_redundant(self):
+        """Test run._parse_results() doesn't create redundant results"""
+        given_string = '''chr1	doRiNA2	gene	1	1000    .	+	.	ID=gene01.01;regulator=PARCLIP#scifi*scifi_cds~PICTAR#fake01*fake01_cds;score=23~42;start=250~255;end=260~265
+chr1	doRiNA2	gene	1	1000    .	+	.	ID=gene01.01;regulator=PARCLIP#scifi*scifi_cds~PICTAR#fake02*fake02_cds;score=23~42;start=250~255;end=260~265'''
+        given = BedTool(given_string, from_string=True)
+
+        expected = [
+            dict(track="scifi", gene="gene01.01", data_source='PARCLIP', score=23, site="scifi_cds",
+                 location="chr1:250-260", strand="+"),
+            dict(track="fake01", gene="gene01.01", data_source='PICTAR', score=42, site="fake01_cds",
+                 location="chr1:255-265", strand="+"),
+            dict(track="fake02", gene="gene01.01", data_source='PICTAR', score=42, site="fake02_cds",
+                 location="chr1:255-265", strand="+")
+        ]
+
+        got = run._parse_results(given)
+
+        self.assertEqual(expected, got)
