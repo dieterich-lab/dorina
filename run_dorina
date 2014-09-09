@@ -32,6 +32,9 @@ def main():
     parser.add_argument('--region-b', dest='region_b', default='any',
                         choices=['any', 'CDS', '3prime', '5prime', 'intron', 'intergenic'],
                         help="region to match set B in")
+    parser.add_argument('-C', '--combine', default='or',
+                        choices=['and', 'or', 'not', 'xor'],
+                        help="set operation to combine set A and set B hits")
     parser.add_argument('-c', '--configfile', dest='configfile',
                         default=argparse.SUPPRESS,
                         help="Load configuration from an alternative file")
@@ -82,8 +85,13 @@ def main():
         list_regulators(options.data.path)
         sys.exit(1)
 
-    result = run.analyse(options.genome, options.set_a, options.match_a, options.region_a, datadir=options.data.path)
-    print result
+    result = run.analyse(options.genome, options.set_a, options.match_a,
+                         options.region_a, options.set_b, options.match_b,
+                         options.region_b, options.combine,
+                         datadir=options.data.path)
+    result.sort(cmp=lambda x,y: cmp(x['score'],y['score']), reverse=True)
+    for res in result:
+        print res
     sys.exit(0)
 
 
