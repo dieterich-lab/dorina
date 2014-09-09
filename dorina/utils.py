@@ -11,7 +11,7 @@ def get_genomes(datadir):
         for gff_file in os.listdir(assembly_path):
             gff_path = path.join(assembly_path, gff_file)
             if not path.isfile(gff_path):
-                logging.debug("skipping non-file %r" % gff_path)
+                #logging.debug("skipping non-file %r" % gff_path)
                 continue
 
             root, ext = path.splitext(gff_file)
@@ -27,18 +27,18 @@ def get_regulators(datadir):
         for experiment in os.listdir(root):
             experiment_path = path.join(root, experiment)
             if not path.isfile(experiment_path):
-                logging.debug("skipping non-file %r" % experiment_path)
+                #logging.debug("skipping non-file %r" % experiment_path)
                 continue
 
             experiment_root, experiment_ext = path.splitext(experiment)
             if not experiment_ext.lower() == '.json':
-                logging.debug("skipping non-JSON file %r" % experiment_path)
+                #logging.debug("skipping non-JSON file %r" % experiment_path)
                 continue
 
             bedfile = path.join(root, '%s.%s' % (experiment_root, 'bed'))
-            logging.debug("looking for %r" % bedfile)
+            #logging.debug("looking for %r" % bedfile)
             if not path.isfile(bedfile):
-                logging.debug("No bedfile for experiment %r" % experiment_path)
+                #logging.debug("No bedfile for experiment %r" % experiment_path)
                 continue
 
             experiments = parse_experiment(experiment_path)
@@ -51,7 +51,7 @@ def get_regulators(datadir):
 
 def parse_experiment(filename):
     """Parse experimental description from a file name"""
-    logging.debug("Parsing experimental description from %r" % filename)
+    #logging.debug("Parsing experimental description from %r" % filename)
     experiment = {}
     with open(filename, 'r') as fh:
         experiment = json.load(fh)
@@ -69,7 +69,7 @@ def walk_assembly_tree(datadir, root_dir, parse_func):
     for species in os.listdir(root):
         species_path = path.join(root, species)
         if not path.isdir(species_path):
-            logging.debug("skipping non-directory %r" % species_path)
+            #logging.debug("skipping non-directory %r" % species_path)
             continue
 
         description_file = path.join(species_path, 'description.json')
@@ -84,7 +84,7 @@ def walk_assembly_tree(datadir, root_dir, parse_func):
         for assembly in os.listdir(species_path):
             assembly_path = path.join(species_path, assembly)
             if not path.isdir(assembly_path):
-                logging.debug("skipping non-directory %r" % assembly_path)
+                #logging.debug("skipping non-directory %r" % assembly_path)
                 continue
 
             assembly_dict = {}
