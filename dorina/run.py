@@ -13,7 +13,7 @@ def analyse(genome, set_a, match_a='any', region_a='any',
             combine='or', genes=None, slop=0,
             datadir=None):
     """Run doRiNA analysis"""
-    logging.debug("analyse(%r, %r(%s))" % (genome, set_a, match_a))
+    logging.debug("analyse(%r, %r(%s) <-'%s'-> %r(%s))" % (genome, set_a, match_a, combine, set_b, match_b))
 
     return _parse_results(_analyse(genome, set_a, match_a, region_a,
                                    set_b, match_b, region_b, combine,
@@ -24,8 +24,6 @@ def _analyse(genome, set_a, match_a='any', region_a='any',
              set_b=None, match_b='any', region_b='any', combine='or',
              genes=None, slop=0, datadir=None):
     """Run doRiNA analysis, internal logic"""
-    logging.debug("analyse(%r, %r(%s))" % (genome, set_a, match_a))
-
     genome_bed_a = _get_genome_bedtool(genome, region_a, datadir, genes)
     regulators_a = map(lambda x: _get_regulator_bedtool(x, datadir), set_a)
     if slop > 0:
