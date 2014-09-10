@@ -31,10 +31,15 @@ def _analyse(genome, set_a, match_a='any', region_a='any',
 
     if match_a == 'any':
         regulator = _merge_regulators(regulators_a)
+        result_a = _cleanup_intersect_gff(genome_bed_a.intersect(regulator, wa=True, wb=True))
     elif match_a == 'all':
-        regulator = _intersect_regulators(regulators_a)
-
-    result_a = _cleanup_intersect_gff(genome_bed_a.intersect(regulator, wa=True, wb=True))
+        results_a = map(lambda x: _cleanup_intersect_gff(genome_bed_a.intersect(x, wa=True, wb=True)), regulators_a)
+        result_a = None
+        for res in results_a:
+            if result_a is None:
+                result_a = res
+                continue
+            result_a = _cleanup_intersect_gff_gff(result_a.intersect(res, wa=True, wb=True))
 
     if set_b is not None:
         genome_bed_b = _get_genome_bedtool(genome, region_b, datadir, genes)
@@ -44,10 +49,16 @@ def _analyse(genome, set_a, match_a='any', region_a='any',
 
         if match_b == 'any':
             regulator = _merge_regulators(regulators_b)
+            result_b = _cleanup_intersect_gff(genome_bed_b.intersect(regulator, wa=True, wb=True))
         elif match_b == 'all':
-            regulator = _intersect_regulators(regulators_b)
+            results_b = map(lambda x: _cleanup_intersect_gff(genome_bed_b.intersect(x, wa=True, wb=True)), regulators_b)
+            result_b = None
+            for res in results_b:
+                if result_b is None:
+                    result_b = res
+                    continue
+                result_b = _cleanup_intersect_gff_gff(result_b.intersect(res, wa=True, wb=True))
 
-        result_b = _cleanup_intersect_gff(genome_bed_b.intersect(regulator, wa=True, wb=True))
 
         if combine == 'or':
             final_results = _merge_regulators([result_a, result_b])
@@ -120,15 +131,36 @@ def _cleanup_intersect_gff(dirty):
     clean_string = ''
     for row in dirty:
         new_row = "\t".join(row[:8])
-        if len(row.fields) >= 17:
-            start = row[15]
-            end = row[16]
-        else:
-            start = row[10]
-            end = row[11]
+        annotations = _parse_annotations(row[8])
 
-        new_row += "\t{0};regulator={1};score={2};start={3};end={4}\n".format(row[8],
-            row[12], row[13], start, end)
+        if len(row.fields) >= 17:
+            if 'start' in annotations:
+                annotations['start'] = "{0}~{1}".format(annotations['start'], row[15])
+                annotations['end'] = "{0}~{1}".format(annotations['end'], row[16])
+            else:
+                annotations['start'] = row[15]
+                annotations['end'] = row[16]
+        else:
+            if 'start' in annotations:
+                annotations['start'] = "{0}~{1}".format(annotations['start'], row[10])
+                annotations['end'] = "{0}~{1}".format(annotations['end'], row[11])
+            else:
+                annotations['start'] = row[10]
+                annotations['end'] = row[11]
+
+        if 'regulator' in annotations:
+            annotations['regulator'] = "{0}~{1}".format(annotations['regulator'], row[12])
+        else:
+            annotations['regulator'] = row[12]
+
+        if 'score' in annotations:
+            annotations['score'] = "{0}~{1}".format(annotations['score'], row[13])
+        else:
+            annotations['score'] = row[13]
+
+        annotations['ID'] += "~{}".format(annotations['ID'])
+
+        new_row += "\tID={ID};regulator={regulator};score={score};start={start};end={end}\n".format(**annotations)
         clean_string += new_row
 
     return BedTool(clean_string, from_string=True)
@@ -144,7 +176,8 @@ def _cleanup_intersect_gff_gff(dirty):
         new_annotations['score'] = "%s~%s" % (ann_a['score'], ann_b['score'])
         new_annotations['start'] = "%s~%s" % (ann_a['start'], ann_b['start'])
         new_annotations['end'] = "%s~%s" % (ann_a['end'], ann_b['end'])
-        new_row += "\tID={0};regulator={1};score={2};start={3};end={4}\n".format(ann_a['ID'],
+        new_annotations['ID'] = "{0}~{1}".format(ann_a['ID'], ann_b['ID'])
+        new_row += "\tID={0};regulator={1};score={2};start={3};end={4}\n".format(new_annotations['ID'],
             new_annotations['regulator'], new_annotations['score'],
             new_annotations['start'], new_annotations['end'])
         clean_string += new_row
@@ -208,12 +241,13 @@ def _parse_results(bedtool_results):
 
     for res in bedtool_results:
         annotations = _parse_annotations(res[8])
-        gene = annotations['ID']
+        genes = annotations['ID'].split('~')
         tracks, data_sources, sites = _parse_tracks_sources_regulators(annotations['regulator'])
         scores = annotations['score'].split('~')
         starts = annotations['start'].split('~')
         ends = annotations['end'].split('~')
         for i in range(len(tracks)):
+            gene = genes[i]
             track = tracks[i]
             data_source = data_sources[i]
             site = sites[i]
