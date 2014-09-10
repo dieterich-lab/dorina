@@ -254,7 +254,7 @@ def _parse_results(bedtool_results):
             start = starts[i]
             end = ends[i]
             strand = res.strand
-            score = int(scores[i])
+            score = float(scores[i])
             location = "%s:%s-%s" % (res.chrom, start, end)
             new_res = dict(track=track, gene=gene, data_source=data_source,
                            score=score, site=site, location=location, strand=strand)
