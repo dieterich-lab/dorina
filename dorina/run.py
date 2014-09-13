@@ -254,7 +254,12 @@ def _parse_results(bedtool_results):
             start = starts[i]
             end = ends[i]
             strand = res.strand
-            score = float(scores[i])
+            try:
+                score = float(scores[i])
+            except ValueError:
+                logging.debug("can't parse score '{}'".format(scores[i]))
+                score = 0
+
             location = "%s:%s-%s" % (res.chrom, start, end)
             new_res = dict(track=track, gene=gene, data_source=data_source,
                            score=score, site=site, location=location, strand=strand)
