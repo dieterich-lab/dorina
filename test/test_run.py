@@ -345,3 +345,26 @@ chr1	doRiNA2	gene	1	1000    .	+	.	ID=gene01.01~gene01.01;regulator=PARCLIP#scifi
         got = run._parse_results(given)
 
         self.assertEqual(expected, got)
+
+
+    def test_parse_tracks_sources_regulators(self):
+        """Test run._parse_tracks_sources_regulators()"""
+        in_str = "source#track*regulator"
+        expected = (['track'], ['source'], ['regulator'])
+        got = run._parse_tracks_sources_regulators(in_str)
+        self.assertEqual(expected, got)
+
+        in_str = "track*regulator"
+        expected = (['track'], ['Unknown'], ['regulator'])
+        got = run._parse_tracks_sources_regulators(in_str)
+        self.assertEqual(expected, got)
+
+        in_str = "source#regulator"
+        expected = (['Unknown'], ['source'], ['regulator'])
+        got = run._parse_tracks_sources_regulators(in_str)
+        self.assertEqual(expected, got)
+
+        in_str = "regulator"
+        expected = (['Unknown'], ['Unknown'], ['regulator'])
+        got = run._parse_tracks_sources_regulators(in_str)
+        self.assertEqual(expected, got)

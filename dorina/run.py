@@ -280,8 +280,18 @@ def _parse_tracks_sources_regulators(string):
     sources = []
     regulators = []
     for r in raw:
-        source, rest = r.split('#')
-        track, regulator = rest.split('*')
+        try:
+            source, rest = r.split('#')
+        except ValueError:
+            source = "Unknown"
+            rest = r
+
+        try:
+            track, regulator = rest.split('*')
+        except ValueError:
+            track = "Unknown"
+            regulator = rest
+
         tracks.append(track)
         sources.append(source)
         regulators.append(regulator)
