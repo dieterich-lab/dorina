@@ -37,11 +37,7 @@ def _analyse(genome, set_a, match_a='any', region_a='any',
             result = _cleanup_intersect_gff(genome_bed.intersect(regulator, wa=True, wb=True))
         elif match == 'all':
             results = map(lambda x: _cleanup_intersect_gff(genome_bed.intersect(x, wa=True, wb=True)), regulators)
-            for res in results:
-                if result is None:
-                    result = res
-                    continue
-                result = _cleanup_intersect_gff_gff(result.intersect(res, wa=True, wb=True))
+            result = reduce(lambda acc, x: _cleanup_intersect_gff_gff(acc.intersect(x, wa=True, wb=True)), results)
         return result
 
     result_a = compute_result(region_a, set_a, match_a)
