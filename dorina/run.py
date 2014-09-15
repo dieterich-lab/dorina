@@ -24,42 +24,29 @@ def _analyse(genome, set_a, match_a='any', region_a='any',
              set_b=None, match_b='any', region_b='any', combine='or',
              genes=None, slop=0, datadir=None):
     """Run doRiNA analysis, internal logic"""
-    genome_bed_a = _get_genome_bedtool(genome, region_a, datadir, genes)
-    regulators_a = map(lambda x: _get_regulator_bedtool(x, datadir), set_a)
-    if slop > 0:
-        regulators_a = map(lambda x: _add_slop(x, genome, slop, datadir), regulators_a)
 
-    if match_a == 'any':
-        regulator = _merge_regulators(regulators_a)
-        result_a = _cleanup_intersect_gff(genome_bed_a.intersect(regulator, wa=True, wb=True))
-    elif match_a == 'all':
-        results_a = map(lambda x: _cleanup_intersect_gff(genome_bed_a.intersect(x, wa=True, wb=True)), regulators_a)
-        result_a = None
-        for res in results_a:
-            if result_a is None:
-                result_a = res
-                continue
-            result_a = _cleanup_intersect_gff_gff(result_a.intersect(res, wa=True, wb=True))
-
-    if set_b is not None:
-        genome_bed_b = _get_genome_bedtool(genome, region_b, datadir, genes)
-        regulators_b = map(lambda x: _get_regulator_bedtool(x, datadir), set_b)
+    def compute_result(region, myset, match):
+        genome_bed = _get_genome_bedtool(genome, region, datadir, genes)
+        regulators = map(lambda x: _get_regulator_bedtool(x, datadir), myset)
         if slop > 0:
-            regulators_b = map(lambda x: _add_slop(x, genome, slop, datadir), regulators_b)
+            regulators = map(lambda x: _add_slop(x, genome, slop, datadir), regulators)
 
-        if match_b == 'any':
-            regulator = _merge_regulators(regulators_b)
-            result_b = _cleanup_intersect_gff(genome_bed_b.intersect(regulator, wa=True, wb=True))
-        elif match_b == 'all':
-            results_b = map(lambda x: _cleanup_intersect_gff(genome_bed_b.intersect(x, wa=True, wb=True)), regulators_b)
-            result_b = None
-            for res in results_b:
-                if result_b is None:
-                    result_b = res
+        result = None
+        if match == 'any':
+            regulator = _merge_regulators(regulators)
+            result = _cleanup_intersect_gff(genome_bed.intersect(regulator, wa=True, wb=True))
+        elif match == 'all':
+            results = map(lambda x: _cleanup_intersect_gff(genome_bed.intersect(x, wa=True, wb=True)), regulators)
+            for res in results:
+                if result is None:
+                    result = res
                     continue
-                result_b = _cleanup_intersect_gff_gff(result_b.intersect(res, wa=True, wb=True))
+                result = _cleanup_intersect_gff_gff(result.intersect(res, wa=True, wb=True))
+        return result
 
-
+    result_a = compute_result(region_a, set_a, match_a)
+    if set_b is not None:
+        result_b = compute_result(region_b, set_b, match_b)
         if combine == 'or':
             final_results = _merge_regulators([result_a, result_b])
         elif combine == 'and':
