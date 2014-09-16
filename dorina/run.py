@@ -5,7 +5,50 @@ import logging
 from os import path
 from cStringIO import StringIO
 from pybedtools import BedTool
+from collections import OrderedDict
 from dorina import utils
+
+class DorinaResult(object):
+    def __init__(self, track, gene, data_source, score, site, location, strand):
+        self.track = track
+        self.gene = gene
+        self.data_source = data_source
+        self.score = score
+        self.site = site
+        self.location = location
+        self.strand = strand
+
+    def __cmp__(self, other):
+        r = cmp(self.location, other.location)
+        if r != 0:
+            return r
+        r = cmp(self.score, other.score)
+        if r != 0:
+            return r
+        r = cmp(self.gene, other.gene)
+        if r != 0:
+            return r
+        r = cmp(self.track, other.track)
+        if r != 0:
+            return r
+        r = cmp(self.data_source, other.data_source)
+        if r != 0:
+            return r
+        r = cmp(self.site, other.site)
+        if r != 0:
+            return r
+        return cmp(self.strand, other.strand)
+
+
+    def __hash__(self):
+        hash_tmpl = "{location}{score}{gene}{track}{data_source}{site}{strand}"
+        hash_str = hash_tmpl.format(**self.to_dict())
+        return hash(hash_str)
+
+    def to_dict(self):
+        return dict(track=self.track, gene=self.gene, data_source=self.data_source,
+                    score=self.score, site=self.site, location=self.location,
+                    strand=self.strand)
 
 
 def analyse(genome, set_a, match_a='any', region_a='any',
@@ -240,33 +283,46 @@ def _parse_results(bedtool_results):
     results = []
 
     for res in bedtool_results:
-        annotations = _parse_annotations(res[8])
-        genes = annotations['ID'].split('~')
-        tracks, data_sources, sites = _parse_tracks_sources_regulators(annotations['regulator'])
-        scores = annotations['score'].split('~')
-        starts = annotations['start'].split('~')
-        ends = annotations['end'].split('~')
-        for i in range(len(tracks)):
-            gene = genes[i]
-            track = tracks[i]
-            data_source = data_sources[i]
-            site = sites[i]
-            start = starts[i]
-            end = ends[i]
-            strand = res.strand
-            try:
-                score = float(scores[i])
-            except ValueError:
-                logging.debug("can't parse score '{}'".format(scores[i]))
-                score = 0
+        _parse_result_line(results, res)
 
-            location = "%s:%s-%s" % (res.chrom, start, end)
-            new_res = dict(track=track, gene=gene, data_source=data_source,
-                           score=score, site=site, location=location, strand=strand)
-            if new_res not in results:
-                results.append(new_res)
+    return _remove_duplicates(results)
 
-    return results
+
+def _remove_duplicates(results):
+    return map(lambda x: x.to_dict(), list(OrderedDict.fromkeys(results)))
+
+
+def _parse_result_line(results, res):
+    """parse a single result line"""
+    annotations = _parse_annotations(res[8])
+    genes = annotations['ID'].split('~')
+    tracks, data_sources, sites = _parse_tracks_sources_regulators(annotations['regulator'])
+    scores = annotations['score'].split('~')
+    starts = annotations['start'].split('~')
+    ends = annotations['end'].split('~')
+    for i in range(len(tracks)):
+        _generate_single_result(i, res, genes, tracks, data_sources, sites, scores, starts, ends, results)
+
+
+def _generate_single_result(i, res, genes, tracks, data_sources, sites, scores, starts, ends, results):
+    gene = genes[i]
+    track = tracks[i]
+    data_source = data_sources[i]
+    site = sites[i]
+    start = starts[i]
+    end = ends[i]
+    strand = res.strand
+    try:
+        score = float(scores[i])
+    except ValueError:
+        logging.debug("can't parse score '{}'".format(scores[i]))
+        score = 0
+
+    location = "%s:%s-%s" % (res.chrom, start, end)
+    new_res = DorinaResult(track=track, gene=gene, data_source=data_source,
+                   score=score, site=site, location=location, strand=strand)
+
+    results.append(new_res)
 
 
 def _parse_annotations(string):
