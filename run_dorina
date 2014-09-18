@@ -89,9 +89,7 @@ def main():
                          options.region_a, options.set_b, options.match_b,
                          options.region_b, options.combine,
                          datadir=options.data.path)
-    result.sort(cmp=lambda x,y: cmp(x['score'],y['score']), reverse=True)
-    for res in result:
-        print res
+    print result,
     sys.exit(0)
 
 

@@ -3,52 +3,8 @@
 import os
 import logging
 from os import path
-from cStringIO import StringIO
 from pybedtools import BedTool
-from collections import OrderedDict
 from dorina import utils
-
-class DorinaResult(object):
-    def __init__(self, track, gene, data_source, score, site, location, strand):
-        self.track = track
-        self.gene = gene
-        self.data_source = data_source
-        self.score = score
-        self.site = site
-        self.location = location
-        self.strand = strand
-
-    def __cmp__(self, other):
-        r = cmp(self.location, other.location)
-        if r != 0:
-            return r
-        r = cmp(self.score, other.score)
-        if r != 0:
-            return r
-        r = cmp(self.gene, other.gene)
-        if r != 0:
-            return r
-        r = cmp(self.track, other.track)
-        if r != 0:
-            return r
-        r = cmp(self.data_source, other.data_source)
-        if r != 0:
-            return r
-        r = cmp(self.site, other.site)
-        if r != 0:
-            return r
-        return cmp(self.strand, other.strand)
-
-
-    def __hash__(self):
-        hash_tmpl = "{location}{score}{gene}{track}{data_source}{site}{strand}"
-        hash_str = hash_tmpl.format(**self.to_dict())
-        return hash(hash_str)
-
-    def to_dict(self):
-        return dict(track=self.track, gene=self.gene, data_source=self.data_source,
-                    score=self.score, site=self.site, location=self.location,
-                    strand=self.strand)
 
 
 def analyse(genome, set_a, match_a='any', region_a='any',
@@ -58,38 +14,32 @@ def analyse(genome, set_a, match_a='any', region_a='any',
     """Run doRiNA analysis"""
     logging.debug("analyse(%r, %r(%s) <-'%s'-> %r(%s))" % (genome, set_a, match_a, combine, set_b, match_b))
 
-    return _parse_results(_analyse(genome, set_a, match_a, region_a,
-                                   set_b, match_b, region_b, combine,
-                                   genes, slop, datadir))
-
-
-def _analyse(genome, set_a, match_a='any', region_a='any',
-             set_b=None, match_b='any', region_b='any', combine='or',
-             genes=None, slop=0, datadir=None):
-    """Run doRiNA analysis, internal logic"""
-
-    def compute_result(region, myset, match):
+    def compute_result(region, regulators, match):
         genome_bed = _get_genome_bedtool(genome, region, datadir, genes)
-        regulators = map(lambda x: _get_regulator_bedtool(x, datadir), myset)
         if slop > 0:
             regulators = map(lambda x: _add_slop(x, genome, slop, datadir), regulators)
 
         result = None
         if match == 'any':
-            regulator = _merge_regulators(regulators)
-            result = _cleanup_intersect_gff(genome_bed.intersect(regulator, wa=True, wb=True))
+            result = genome_bed.intersect(_merge_regulators(regulators), wa=True, u=True)
         elif match == 'all':
-            results = map(lambda x: _cleanup_intersect_gff(genome_bed.intersect(x, wa=True, wb=True)), regulators)
-            result = reduce(lambda acc, x: _cleanup_intersect_gff_gff(acc.intersect(x, wa=True, wb=True)), results)
+            results = [genome_bed]
+            results.extend(regulators)
+            result = reduce(lambda acc, x: acc.intersect(x, wa=True, u=True), results)
+
         return result
 
-    result_a = compute_result(region_a, set_a, match_a)
+    regulators_a = map(lambda x: _get_regulator_bedtool(x, datadir), set_a)
+    regulators_b = []
+
+    result_a = compute_result(region_a, regulators_a, match_a)
     if set_b is not None:
-        result_b = compute_result(region_b, set_b, match_b)
+        regulators_b = map(lambda x: _get_regulator_bedtool(x, datadir), set_b)
+        result_b = compute_result(region_b, regulators_b, match_b)
         if combine == 'or':
             final_results = _merge_regulators([result_a, result_b])
         elif combine == 'and':
-            final_results = _cleanup_intersect_gff_gff(result_a.intersect(result_b, wa=True, wb=True))
+            final_results = result_a.intersect(result_b, wa=True, u=True)
         elif combine == 'xor':
             not_in_b = result_a.intersect(result_b, v=True, wa=True)
             not_in_a = result_b.intersect(result_a, v=True, wa=True)
@@ -100,6 +50,9 @@ def _analyse(genome, set_a, match_a='any', region_a='any',
     else:
         final_results = result_a
 
+    regulators_a.extend(regulators_b)
+    regulator = _merge_regulators(regulators_a)
+    final_results = final_results.intersect(regulator, wa=True, wb=True)
     return final_results
 
 def _merge_regulators(regulators):
@@ -110,105 +63,6 @@ def _merge_regulators(regulators):
         regulator = regulator.cat(regulators[i], postmerge=False)
 
     return regulator
-
-
-def _intersect_regulators(regulators):
-    """Intersect a list of regulators using BedTool.intersect"""
-    regulator = regulators[0]
-    for i in range(1, len(regulators)):
-        logging.debug('intersect regulator %r' % regulators[i])
-        dirty_reg = regulator.intersect(regulators[i], wa=True, wb=True)
-        regulator = _cleanup_intersect_bed(dirty_reg)
-
-    return regulator
-
-
-def _cleanup_intersect_bed(dirty):
-    clean_string = ''
-    for row in dirty:
-        try:
-            # Bed9 format?
-            new_start = "%s" % max(int(row[1]), int(row[9]))
-            new_end = "%s" % min(int(row[2]), int(row[10]))
-            combined_start = "%s~%s" % (row[6], row[9])
-            combined_end = "%s~%s" % (row[7], row[10])
-            new_name = "~".join([row[3], row[11]])
-            new_score = "%s~%s" % (row[4], row[12])
-            new_strand = row[5] if row[5] == row[13] else '.'
-        except ValueError:
-            # Try bed6 instead
-            new_start = "%s" % max(int(row[1]), int(row[7]))
-            new_end = "%s" % min(int(row[2]), int(row[8]))
-            combined_start = "%s~%s" % (row[1], row[7])
-            combined_end = "%s~%s" % (row[2], row[8])
-            new_name = "~".join([row[3], row[9]])
-            new_score = "%s~%s" % (row[4], row[10])
-            new_strand = row[5] if row[5] == row[11] else '.'
-
-        new_row = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\n".format(
-            row[0], new_start, new_end, new_name, new_score, new_strand,
-            combined_start, combined_end)
-        clean_string += new_row
-
-    return BedTool(clean_string, from_string=True)
-
-
-def _cleanup_intersect_gff(dirty):
-    clean_string = ''
-    for row in dirty:
-        new_row = "\t".join(row[:8])
-        annotations = _parse_annotations(row[8])
-
-        if len(row.fields) >= 17:
-            if 'start' in annotations:
-                annotations['start'] = "{0}~{1}".format(annotations['start'], row[15])
-                annotations['end'] = "{0}~{1}".format(annotations['end'], row[16])
-            else:
-                annotations['start'] = row[15]
-                annotations['end'] = row[16]
-        else:
-            if 'start' in annotations:
-                annotations['start'] = "{0}~{1}".format(annotations['start'], row[10])
-                annotations['end'] = "{0}~{1}".format(annotations['end'], row[11])
-            else:
-                annotations['start'] = row[10]
-                annotations['end'] = row[11]
-
-        if 'regulator' in annotations:
-            annotations['regulator'] = "{0}~{1}".format(annotations['regulator'], row[12])
-        else:
-            annotations['regulator'] = row[12]
-
-        if 'score' in annotations:
-            annotations['score'] = "{0}~{1}".format(annotations['score'], row[13])
-        else:
-            annotations['score'] = row[13]
-
-        annotations['ID'] += "~{}".format(annotations['ID'])
-
-        new_row += "\tID={ID};regulator={regulator};score={score};start={start};end={end}\n".format(**annotations)
-        clean_string += new_row
-
-    return BedTool(clean_string, from_string=True)
-
-def _cleanup_intersect_gff_gff(dirty):
-    clean_string = ''
-    for row in dirty:
-        new_row = "\t".join(row[:8])
-        ann_a = _parse_annotations(row[8])
-        ann_b = _parse_annotations(row[17])
-        new_annotations = {}
-        new_annotations['regulator'] = "{0}~{1}".format(ann_a['regulator'], ann_b['regulator'])
-        new_annotations['score'] = "%s~%s" % (ann_a['score'], ann_b['score'])
-        new_annotations['start'] = "%s~%s" % (ann_a['start'], ann_b['start'])
-        new_annotations['end'] = "%s~%s" % (ann_a['end'], ann_b['end'])
-        new_annotations['ID'] = "{0}~{1}".format(ann_a['ID'], ann_b['ID'])
-        new_row += "\tID={0};regulator={1};score={2};start={3};end={4}\n".format(new_annotations['ID'],
-            new_annotations['regulator'], new_annotations['score'],
-            new_annotations['start'], new_annotations['end'])
-        clean_string += new_row
-
-    return BedTool(clean_string, from_string=True)
 
 
 def _add_slop(feature, genome_name, slop, datadir=None):
@@ -259,85 +113,3 @@ def _get_regulator_bedtool(regulator_name, datadir=None):
         return BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir))
 
     return BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir)).filter(filter_func, regulator_name).saveas()
-
-
-def _parse_results(bedtool_results):
-    """parse a bedtool result data structure"""
-    results = []
-
-    for res in bedtool_results:
-        _parse_result_line(results, res)
-
-    return _remove_duplicates(results)
-
-
-def _remove_duplicates(results):
-    return map(lambda x: x.to_dict(), list(OrderedDict.fromkeys(results)))
-
-
-def _parse_result_line(results, res):
-    """parse a single result line"""
-    annotations = _parse_annotations(res[8])
-    genes = annotations['ID'].split('~')
-    tracks, data_sources, sites = _parse_tracks_sources_regulators(annotations['regulator'])
-    scores = annotations['score'].split('~')
-    starts = annotations['start'].split('~')
-    ends = annotations['end'].split('~')
-    for i in range(len(tracks)):
-        _generate_single_result(i, res, genes, tracks, data_sources, sites, scores, starts, ends, results)
-
-
-def _generate_single_result(i, res, genes, tracks, data_sources, sites, scores, starts, ends, results):
-    gene = genes[i]
-    track = tracks[i]
-    data_source = data_sources[i]
-    site = sites[i]
-    start = starts[i]
-    end = ends[i]
-    strand = res.strand
-    try:
-        score = float(scores[i])
-    except ValueError:
-        logging.debug("can't parse score '{}'".format(scores[i]))
-        score = 0
-
-    location = "%s:%s-%s" % (res.chrom, start, end)
-    new_res = DorinaResult(track=track, gene=gene, data_source=data_source,
-                   score=score, site=site, location=location, strand=strand)
-
-    results.append(new_res)
-
-
-def _parse_annotations(string):
-    annotation_dict = {}
-    annotation_list = string.split(';')
-    for ann in annotation_list:
-        key, val = ann.split('=')
-        annotation_dict[key] = val
-
-    return annotation_dict
-
-
-def _parse_tracks_sources_regulators(string):
-    raw = string.split('~')
-    tracks = []
-    sources = []
-    regulators = []
-    for r in raw:
-        try:
-            source, rest = r.split('#')
-        except ValueError:
-            source = "Unknown"
-            rest = r
-
-        try:
-            track, regulator = rest.split('*')
-        except ValueError:
-            track = "Unknown"
-            regulator = rest
-
-        tracks.append(track)
-        sources.append(source)
-        regulators.append(regulator)
-
-    return tracks, sources, regulators
