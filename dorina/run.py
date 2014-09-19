@@ -106,7 +106,7 @@ def _get_regulator_bedtool(regulator_name, datadir=None):
             filter_name = '_'.join(name.split('_')[1:])
         else:
             filter_name = name
-        res = filter_name in rec.name
+        res = (filter_name + '*' in rec.name) or (filter_name == rec.name)
         return res
 
     if os.sep in regulator_name:
