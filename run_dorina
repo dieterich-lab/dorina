@@ -132,11 +132,6 @@ def list_regulators(datadir):
             print "\t\t%s" % assembly
             for regulator, regulator_dict in assembly_dict.items():
                 print "\t\t\t%s" % regulator
-                items = regulator_dict.items()
-                items.sort(key=lambda x: x[0])
-                for name, data in items:
-                    print "\t\t\t\t%s" % name
-                    print "\t\t\t\t\t%s" % data['summary']
 
 if __name__ == "__main__":
     main()
