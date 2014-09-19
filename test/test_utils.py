@@ -45,15 +45,18 @@ class TestListDataWithoutOptions(unittest.TestCase):
         scifi = utils.parse_experiment(scifi_path)[0]
         scifi['file'] = scifi_path
         fake_path = path.join(datadir, basedir, 'PICTAR_fake.json')
-        fake01, fake02 = utils.parse_experiment(fake_path)
-        fake01['file'] = fake_path
-        fake02['file'] = fake_path
+        experiments = utils.parse_experiment(fake_path)
+        for exp in experiments:
+            exp['file'] = fake_path
+
         expected = {
             'h_sapiens': {
                 'hg19': {
                     'PARCLIP_scifi': scifi,
-                    'PICTAR_fake01': fake01,
-                    'PICTAR_fake02': fake02
+                    'PICTAR_fake01': experiments[0],
+                    'PICTAR_fake02': experiments[1],
+                    'PICTAR_fake023': experiments[2],
+                    'fake024|Pictar': experiments[3]
                 }
             }
         }
