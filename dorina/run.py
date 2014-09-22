@@ -110,6 +110,11 @@ def _get_regulator_bedtool(regulator_name, datadir=None):
         return res
 
     if os.sep in regulator_name:
-        return BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir))
+        bt = BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir))
+    else:
+        bt = BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir)).filter(filter_func, regulator_name).saveas()
 
-    return BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir)).filter(filter_func, regulator_name).saveas()
+    if len(bt[0].fields) == 12:
+        bt = bt.bed6().saveas()
+
+    return bt
