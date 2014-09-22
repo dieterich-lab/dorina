@@ -4,6 +4,9 @@ import logging
 import os
 import json
 from os import path
+import re
+
+gene_name = re.compile(r'.*ID=(.*?)($|;\w+)')
 
 def get_genomes(datadir):
     """Get all available genomes"""
@@ -120,3 +123,17 @@ def get_regulator_by_name(name, datadir):
                 return path.splitext(assembly_dir[name]['file'])[0]
 
     return None
+
+
+def get_genes(name, datadir):
+    """Get a list of genes from genome <name>"""
+    genes = []
+
+    genome_dir = get_genome_by_name(name, datadir)
+    genome = path.join(genome_dir, 'all.gff')
+    for line in open(genome, 'r'):
+        match = gene_name.match(line)
+        if match is not None:
+            genes.append(match.group(1))
+
+    return genes

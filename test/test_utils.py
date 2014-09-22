@@ -116,3 +116,11 @@ class TestListDataWithoutOptions(unittest.TestCase):
         expected = path.join(datadir, 'manual')
         got = utils.get_regulator_by_name(expected, datadir)
         self.assertEqual(expected, got)
+
+
+    def test_get_genes(self):
+        """Test utils.get_genes()"""
+        expected = ['gene01.01', 'gene01.02']
+        got = utils.get_genes('hg19', datadir=datadir)
+
+        self.assertEqual(expected, got)
