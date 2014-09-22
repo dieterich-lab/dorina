@@ -130,7 +130,13 @@ def get_genes(name, datadir):
     genes = []
 
     genome_dir = get_genome_by_name(name, datadir)
+    if genome_dir is None:
+        return genes
+
     genome = path.join(genome_dir, 'all.gff')
+    if not path.exists(genome):
+        return genes
+
     for line in open(genome, 'r'):
         match = gene_name.match(line)
         if match is not None:

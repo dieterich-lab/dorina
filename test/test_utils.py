@@ -122,5 +122,8 @@ class TestListDataWithoutOptions(unittest.TestCase):
         """Test utils.get_genes()"""
         expected = ['gene01.01', 'gene01.02']
         got = utils.get_genes('hg19', datadir=datadir)
+        self.assertEqual(expected, got)
 
+        expected = []
+        got = utils.get_genes('invalid', datadir=datadir)
         self.assertEqual(expected, got)
