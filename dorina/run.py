@@ -9,22 +9,29 @@ from dorina import utils
 
 def analyse(genome, set_a, match_a='any', region_a='any',
             set_b=None, match_b='any', region_b='any',
-            combine='or', genes=None, slop=0,
+            combine='or', genes=None, window_a=-1, window_b=-1,
             datadir=None):
     """Run doRiNA analysis"""
     logging.debug("analyse(%r, %r(%s) <-'%s'-> %r(%s))" % (genome, set_a, match_a, combine, set_b, match_b))
 
-    def compute_result(region, regulators, match):
+    def compute_result(region, regulators, match, window):
         genome_bed = _get_genome_bedtool(genome, region, datadir, genes)
-        if slop > 0:
-            regulators = map(lambda x: _add_slop(x, genome, slop, datadir), regulators)
+
+        # create local copy so we can mangle it
+        _regulators = regulators[:]
+        if window > -1:
+            initial = _regulators.pop(0)
+            genome_bed = genome_bed.intersect(initial)
+            if window > 0:
+                genome_bed = _add_slop(genome_bed, genome, window, datadir)
+
 
         result = None
         if match == 'any':
-            result = genome_bed.intersect(_merge_regulators(regulators), wa=True, u=True)
+            result = genome_bed.intersect(_merge_regulators(_regulators), wa=True, u=True)
         elif match == 'all':
             results = [genome_bed]
-            results.extend(regulators)
+            results.extend(_regulators)
             result = reduce(lambda acc, x: acc.intersect(x, wa=True, u=True), results)
 
         return result
@@ -32,10 +39,10 @@ def analyse(genome, set_a, match_a='any', region_a='any',
     regulators_a = map(lambda x: _get_regulator_bedtool(x, datadir), set_a)
     regulators_b = []
 
-    result_a = compute_result(region_a, regulators_a, match_a)
+    result_a = compute_result(region_a, regulators_a, match_a, window_a)
     if set_b is not None:
         regulators_b = map(lambda x: _get_regulator_bedtool(x, datadir), set_b)
-        result_b = compute_result(region_b, regulators_b, match_b)
+        result_b = compute_result(region_b, regulators_b, match_b, window_b)
         if combine == 'or':
             final_results = _merge_regulators([result_a, result_b])
         elif combine == 'and':

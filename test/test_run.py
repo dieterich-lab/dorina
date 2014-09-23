@@ -109,6 +109,29 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         self.assertMultiLineEqual(str(expected), str(got))
 
 
+    def test_analyse_all_regions_seta_windowed(self):
+        """Test run.analyse() on all regions with all regulators from set A matching in an overlapping window"""
+        bed_str = """chr1	doRiNA2	gene	250	260 .	+	.	ID=gene01.01	chr1	250	260	PARCLIP#scifi*scifi_cds	5	+	250	260
+chr1	doRiNA2	gene	250	260	.	+	.	ID=gene01.01	chr1	255	265	PICTAR#fake01*fake01_cds	5	+	255	265"""
+        expected = BedTool(bed_str, from_string=True)
+        got = run.analyse('hg19', set_a=['PARCLIP_scifi', 'PICTAR_fake01'], match_a='all', region_a='any',
+                          window_a=0, datadir=datadir)
+        self.assertMultiLineEqual(str(expected), str(got))
+
+
+    def test_analyse_all_regions_seta_windowed_slop(self):
+        """Test run.analyse() on all regions with all regulators from set A matching in an overlapping window with slop"""
+        bed_str = """chr1	doRiNA2	gene    1	1260	.	+	.	ID=gene01.01	chr1	250	260	PARCLIP#scifi*scifi_cds	5	+	250	260
+chr1	doRiNA2	gene	1	1260	.	+	.	ID=gene01.01	chr1	1250	1260	PARCLIP#scifi*scifi_intergenic	5	.	1250	1260
+chr1	doRiNA2	gene	1	1260	.	+	.	ID=gene01.01	chr1	255	265	PICTAR#fake01*fake01_cds	5	+	255	265
+chr1	doRiNA2	gene	1350	3360	.	+	.	ID=gene01.02	chr1	2350	2360	PARCLIP#scifi*scifi_intron	5	+	2350	2360
+chr1	doRiNA2	gene	1350	3360	.	+	.	ID=gene01.02	chr1	1350	1360	PICTAR#fake01*fake01_intergenic	5	.	1350	1360"""
+        expected = BedTool(bed_str, from_string=True)
+        got = run.analyse('hg19', set_a=['PARCLIP_scifi', 'PICTAR_fake01'], match_a='all', region_a='any',
+                          window_a=1000, datadir=datadir)
+        self.assertMultiLineEqual(str(expected), str(got))
+
+
     def test_add_slop(self):
         """Test run._add_slop()"""
         slop_string = """chr1   0   560 PARCLIP#scifi*scifi_cds 5   +   250 260
