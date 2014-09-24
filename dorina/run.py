@@ -121,7 +121,7 @@ def _get_regulator_bedtool(regulator_name, datadir=None):
     else:
         bt = BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir)).filter(filter_func, regulator_name).saveas()
 
-    if len(bt[0].fields) > 6:
+    if len(bt) > 0 and len(bt[0].fields) > 6:
         bt = bt.bed6().saveas()
 
     return bt
