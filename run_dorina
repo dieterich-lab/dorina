@@ -87,7 +87,7 @@ def main():
 
     result = run.analyse(options.genome, options.set_a, options.match_a,
                          options.region_a, options.set_b, options.match_b,
-                         options.region_b, options.combine,
+                         options.region_b, options.combine, options.genes,
                          datadir=options.data.path)
     print result,
     sys.exit(0)
