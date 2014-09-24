@@ -116,7 +116,7 @@ def _get_regulator_bedtool(regulator_name, datadir=None):
         res = (filter_name + '*' in rec.name) or (filter_name == rec.name)
         return res
 
-    if os.sep in regulator_name:
+    if os.sep in regulator_name or '_all' in regulator_name:
         bt = BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir))
     else:
         bt = BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir)).filter(filter_func, regulator_name).saveas()
