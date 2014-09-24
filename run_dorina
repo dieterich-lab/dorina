@@ -35,6 +35,12 @@ def main():
     parser.add_argument('-C', '--combine', default='or',
                         choices=['and', 'or', 'not', 'xor'],
                         help="set operation to combine set A and set B hits")
+    parser.add_argument('--window-a', dest='window_a',
+                        type=int, default=-1,
+                        help="Use windowed search for set A")
+    parser.add_argument('--window-b', dest='window_b',
+                        type=int, default=-1,
+                        help="Use windowed search for set B")
     parser.add_argument('-c', '--configfile', dest='configfile',
                         default=argparse.SUPPRESS,
                         help="Load configuration from an alternative file")
@@ -88,6 +94,7 @@ def main():
     result = run.analyse(options.genome, options.set_a, options.match_a,
                          options.region_a, options.set_b, options.match_b,
                          options.region_b, options.combine, options.genes,
+                         options.window_a, options.window_b,
                          datadir=options.data.path)
     print result,
     sys.exit(0)
