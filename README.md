@@ -6,7 +6,7 @@ database of posttranscriptional regulatory elements
 About
 -----
 
-TODO: write this
+This is the utility library of the doRiNA database of posttranscriptional regulatory elements.
 
 Installation
 ------------
@@ -24,14 +24,14 @@ first Cython and then pybedtools once the Cython install finished.
 Data layout
 -----------
 
-At the moment, doRiNA 2 expects data to live in @/data/projects/doRiNA2@.
+At the moment, doRiNA 2 expects data to live in `/data/projects/doRiNA2`.
 
 Within the data directory, doRiNA needs two directory structures, one for
 genomes and one for regulators. Genomes are split into directories by clade,
-species and assembly, e.g. @mammals/h_sapiens/hg19@. The assembly directory then
+species and assembly, e.g. `mammals/h_sapiens/hg19`. The assembly directory then
 contains a number of GFF files with the different subsets of genomic data.
 Creating these subsets from a GTF file downloaded from UCSC is accomplished by
-running the @create_assembly.sh@ script in the doRiNA source tree.
+running the `create_assembly.sh` script in the doRiNA source tree.
 
 Regulators follow the identical split as with the genomes, just that they
 additionally sort the regulators by miRNA and RBPs. Regulators are given as BED
@@ -39,7 +39,7 @@ files. To be picked up by doRiNA, they need to be accompanied by a JSON metadata
 file with the same name but ending in .json instead of .bed.
 
 As an example for the JSON format, take
-@regulators/mammals/h_sapiens/hg19/RBP/PARCLIP_AGO1234_hg19.json@
+`regulators/mammals/h_sapiens/hg19/RBP/PARCLIP_AGO1234_hg19.json`
 
 ```
 {
@@ -105,4 +105,5 @@ RNA-Binding Protein HuR.",
 License
 -------
 
-TODO: select license
+dorina is licensed under the GNU General Public Licence (GPL) version 3.
+See `LICENSE` file for details.
