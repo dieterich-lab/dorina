@@ -79,13 +79,13 @@ def _add_slop(feature, genome_name, slop, datadir=None):
 
 def _get_genome_chromfile(genome_name, datadir=None):
     """Get the path to the .genome file listing chromosome sizes"""
-    return path.join(utils.get_genome_by_name(genome_name, datadir),
+    return path.join(utils.get_genome_by_name(genome_name),
                      "{}.genome".format(genome_name))
 
 
 def _get_genome_bedtool(genome_name, region, datadir=None, genes=None):
     """get the bedtool object for a genome depending on the name and the region"""
-    genome = utils.get_genome_by_name(genome_name, datadir)
+    genome = utils.get_genome_by_name(genome_name)
     if region == "any":
         filename = path.join(genome, 'all.gff')
     elif region == "CDS":
@@ -117,9 +117,9 @@ def _get_regulator_bedtool(regulator_name, datadir=None):
         return res
 
     if os.sep in regulator_name or '_all' in regulator_name:
-        bt = BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir))
+        bt = BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name))
     else:
-        bt = BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name, datadir)).filter(filter_func, regulator_name).saveas()
+        bt = BedTool('%s.bed' % utils.get_regulator_by_name(regulator_name)).filter(filter_func, regulator_name).saveas()
 
     if len(bt) > 0 and len(bt[0].fields) > 6:
         bt = bt.bed6().saveas()

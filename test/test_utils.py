@@ -3,10 +3,11 @@
 import unittest
 from os import path
 from argparse import Namespace
+import dorina
 from dorina import config
-from dorina import utils
 
 datadir = path.join(path.dirname(path.abspath(__file__)), 'data')
+utils = dorina.utils.DorinaUtils(datadir)
 
 class TestListDataWithoutOptions(unittest.TestCase):
     def setUp(self):
@@ -34,7 +35,7 @@ class TestListDataWithoutOptions(unittest.TestCase):
             }
         }
 
-        got = utils.get_genomes(datadir=datadir)
+        got = utils.get_genomes()
         self.assertEqual(expected, got)
 
 
@@ -57,7 +58,7 @@ class TestListDataWithoutOptions(unittest.TestCase):
             'fake024|Pictar': experiments[3]
         }
 
-        got = utils.get_regulators(datadir=datadir)
+        got = utils.get_regulators()
         self.maxDiff = None
 
         self.assertTrue("h_sapiens" in got)
@@ -92,44 +93,44 @@ class TestListDataWithoutOptions(unittest.TestCase):
 
     def test_get_genome_by_name(self):
         """Test utils.get_genome_by_name()"""
-        got = utils.get_genome_by_name("invalid", datadir=datadir)
+        got = utils.get_genome_by_name("invalid")
         self.assertIsNone(got)
 
         expected = path.join(datadir, 'genomes', 'h_sapiens', 'hg19')
-        got = utils.get_genome_by_name("hg19", datadir=datadir)
+        got = utils.get_genome_by_name("hg19")
         self.assertEqual(expected, got)
 
 
     def test_get_regulator_by_name(self):
         """Test utils.get_regulator_by_name()"""
-        got = utils.get_regulator_by_name("invalid", datadir=datadir)
+        got = utils.get_regulator_by_name("invalid")
         self.assertIsNone(got)
 
         expected = path.join(datadir, 'regulators', 'h_sapiens', 'hg19', 'PARCLIP_scifi')
-        got = utils.get_regulator_by_name("PARCLIP_scifi", datadir=datadir)
+        got = utils.get_regulator_by_name("PARCLIP_scifi")
         self.assertEqual(expected, got)
 
         expected = path.join(datadir, 'regulators', 'h_sapiens', 'hg19', 'PICTAR_fake')
-        got = utils.get_regulator_by_name("PICTAR_fake02", datadir=datadir)
+        got = utils.get_regulator_by_name("PICTAR_fake02")
         self.assertEqual(expected, got)
 
         expected = path.join(datadir, 'manual')
-        got = utils.get_regulator_by_name(expected, datadir)
+        got = utils.get_regulator_by_name(expected)
         self.assertEqual(expected, got)
 
         # Make sure that the assembly is not ignored when the
         # regulator name is not unique in the data directory.  Here we
         # have PICTAR_fake in hg18 and in hg19.
         expected = path.join(datadir, 'regulators', 'h_sapiens', 'hg19', 'PICTAR_fake')
-        got = utils.get_regulator_by_name("PICTAR_fake", datadir=datadir)
+        got = utils.get_regulator_by_name("PICTAR_fake")
         self.assertEqual(expected, got)
 
     def test_get_genes(self):
         """Test utils.get_genes()"""
         expected = ['gene01.01', 'gene01.02']
-        got = utils.get_genes('hg19', datadir=datadir)
+        got = utils.get_genes('hg19')
         self.assertEqual(expected, got)
 
         expected = []
-        got = utils.get_genes('invalid', datadir=datadir)
+        got = utils.get_genes('invalid')
         self.assertEqual(expected, got)

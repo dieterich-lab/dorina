@@ -4,11 +4,14 @@ import unittest
 from os import path
 from argparse import Namespace
 from pybedtools import BedTool
+
+import dorina
 from dorina import config
 from dorina import utils
 from dorina import run
 
 datadir = path.join(path.dirname(path.abspath(__file__)), 'data')
+utils = dorina.utils.DorinaUtils(datadir)
 
 class TestAnalyseWithoutOptions(unittest.TestCase):
     def setUp(self):
@@ -145,7 +148,7 @@ chr1	doRiNA2	gene	1350	3360	.	+	.	ID=gene01.02	chr1	1350	1360	PICTAR#fake01*fake
 
     def test_get_genome_chromfile(self):
         """Test run._get_genome_chromfile()"""
-        expected = path.join(utils.get_genome_by_name('hg19', datadir=datadir), 'hg19.genome')
+        expected = path.join(utils.get_genome_by_name('hg19'), 'hg19.genome')
         got = run._get_genome_chromfile('hg19', datadir=datadir)
         self.assertEqual(expected, got)
 
@@ -155,31 +158,31 @@ chr1	doRiNA2	gene	1350	3360	.	+	.	ID=gene01.02	chr1	1350	1360	PICTAR#fake01*fake
         # should raise a ValueError for an invalid region
         self.assertRaises(ValueError, run._get_genome_bedtool, 'hg19', 'invalid', datadir)
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19', datadir), 'all.gff'))
+        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), 'all.gff'))
         got = run._get_genome_bedtool('hg19', 'any', datadir)
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19', datadir), 'cds.gff'))
+        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), 'cds.gff'))
         got = run._get_genome_bedtool('hg19', 'CDS', datadir)
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19', datadir), '3_utr.gff'))
+        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), '3_utr.gff'))
         got = run._get_genome_bedtool('hg19', '3prime', datadir)
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19', datadir), '5_utr.gff'))
+        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), '5_utr.gff'))
         got = run._get_genome_bedtool('hg19', '5prime', datadir)
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19', datadir), 'intron.gff'))
+        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), 'intron.gff'))
         got = run._get_genome_bedtool('hg19', 'intron', datadir)
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19', datadir), 'intergenic.gff'))
+        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), 'intergenic.gff'))
         got = run._get_genome_bedtool('hg19', 'intergenic', datadir)
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19', datadir), 'all.gff')).filter(
+        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), 'all.gff')).filter(
                 lambda x: x.name == "gene01.02").saveas()
         got = run._get_genome_bedtool('hg19', 'any', datadir, genes=['gene01.02'])
         self.assertEqual(expected, got)
@@ -187,7 +190,7 @@ chr1	doRiNA2	gene	1350	3360	.	+	.	ID=gene01.02	chr1	1350	1360	PICTAR#fake01*fake
 
     def test_get_regulator_bedtool(self):
         """Test run._get_regulator_bedtool()"""
-        expected = BedTool('%s.bed' % utils.get_regulator_by_name('PARCLIP_scifi', datadir)).bed6()
+        expected = BedTool('%s.bed' % utils.get_regulator_by_name('PARCLIP_scifi')).bed6()
         got = run._get_regulator_bedtool('PARCLIP_scifi', datadir)
         self.assertEqual(expected, got)
 

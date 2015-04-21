@@ -8,138 +8,137 @@ import re
 
 gene_name = re.compile(r'.*ID=(.*?)($|;\w+)')
 
-def get_genomes(datadir):
-    """Get all available genomes"""
-    def parse_func(assembly_path, assembly_dict):
-        for gff_file in os.listdir(assembly_path):
-            gff_path = path.join(assembly_path, gff_file)
-            if not path.isfile(gff_path):
-                #logging.debug("skipping non-file %r" % gff_path)
+class DorinaUtils:
+    def __init__(self, datadir):
+        self.datadir = datadir
+
+    def get_genomes(self):
+        """Get all available genomes"""
+        def parse_func(assembly_path, assembly_dict):
+            for gff_file in os.listdir(assembly_path):
+                gff_path = path.join(assembly_path, gff_file)
+                if not path.isfile(gff_path):
+                    #logging.debug("skipping non-file %r" % gff_path)
+                    continue
+
+                root, ext = path.splitext(gff_file)
+                if ext in ('.gff', '.bed'):
+                    assembly_dict[root] = True
+
+        return self.walk_assembly_tree('genomes', parse_func)
+
+    def get_regulators(self):
+        """Get all available regulators"""
+        def parse_func(root, regulators):
+            for experiment in os.listdir(root):
+                experiment_path = path.join(root, experiment)
+                if not path.isfile(experiment_path):
+                    #logging.debug("skipping non-file %r" % experiment_path)
+                    continue
+
+                experiment_root, experiment_ext = path.splitext(experiment)
+                if not experiment_ext.lower() == '.json':
+                    #logging.debug("skipping non-JSON file %r" % experiment_path)
+                    continue
+
+                bedfile = path.join(root, '%s.%s' % (experiment_root, 'bed'))
+                #logging.debug("looking for %r" % bedfile)
+                if not path.isfile(bedfile):
+                    #logging.debug("No bedfile for experiment %r" % experiment_path)
+                    continue
+
+                experiments = self.parse_experiment(experiment_path)
+                for experiment_dict in experiments:
+                    experiment_dict['file'] = experiment_path
+                    regulators[experiment_dict['id']] = experiment_dict
+
+        return self.walk_assembly_tree('regulators', parse_func)
+
+    def parse_experiment(self, filename):
+        """Parse experimental description from a file name"""
+        #logging.debug("Parsing experimental description from %r" % filename)
+        experiment = {}
+        with open(filename, 'r') as fh:
+            experiment = json.load(fh)
+
+        return experiment
+
+    def walk_assembly_tree(self, root_dir, parse_func):
+        """Walk a directory structure containg clade, species, assembly
+
+        Call parse_func() for every assembly directory"""
+        genomes = {}
+
+        root = path.join(self.datadir, root_dir)
+
+        for species in os.listdir(root):
+            species_path = path.join(root, species)
+            if not path.isdir(species_path):
+                #logging.debug("skipping non-directory %r" % species_path)
                 continue
 
-            root, ext = path.splitext(gff_file)
-            if ext in ('.gff', '.bed'):
-                assembly_dict[root] = True
+            description_file = path.join(species_path, 'description.json')
+            species_dict = {}
+            try:
+                with open(description_file, 'r') as fh:
+                    genomes[species] = json.load(fh)
+                    genomes[species]['assemblies'] = species_dict
+            except IOError:
+                genomes[species] = species_dict
 
-    return walk_assembly_tree(datadir, 'genomes', parse_func)
+            for assembly in os.listdir(species_path):
+                assembly_path = path.join(species_path, assembly)
+                if not path.isdir(assembly_path):
+                    #logging.debug("skipping non-directory %r" % assembly_path)
+                    continue
 
+                assembly_dict = {}
+                species_dict[assembly] = assembly_dict
 
-def get_regulators(datadir):
-    """Get all available regulators"""
-    def parse_func(root, regulators):
-        for experiment in os.listdir(root):
-            experiment_path = path.join(root, experiment)
-            if not path.isfile(experiment_path):
-                #logging.debug("skipping non-file %r" % experiment_path)
-                continue
+                parse_func(assembly_path, assembly_dict)
 
-            experiment_root, experiment_ext = path.splitext(experiment)
-            if not experiment_ext.lower() == '.json':
-                #logging.debug("skipping non-JSON file %r" % experiment_path)
-                continue
+        return genomes
 
-            bedfile = path.join(root, '%s.%s' % (experiment_root, 'bed'))
-            #logging.debug("looking for %r" % bedfile)
-            if not path.isfile(bedfile):
-                #logging.debug("No bedfile for experiment %r" % experiment_path)
-                continue
+    def get_genome_by_name(self, name):
+        """Take a genome name and return the path to the genome directory"""
+        genomes = self.get_genomes()
 
-            experiments = parse_experiment(experiment_path)
-            for experiment_dict in experiments:
-                experiment_dict['file'] = experiment_path
-                regulators[experiment_dict['id']] = experiment_dict
+        for species, species_dir in genomes.items():
+            if name in species_dir['assemblies']:
+                return path.join(self.datadir, 'genomes', species, name)
 
-    return walk_assembly_tree(datadir, 'regulators', parse_func)
+        return None
 
+    def get_regulator_by_name(self, name):
+        """Take a regulator name and return the path to the regulator basename without file extension"""
 
-def parse_experiment(filename):
-    """Parse experimental description from a file name"""
-    #logging.debug("Parsing experimental description from %r" % filename)
-    experiment = {}
-    with open(filename, 'r') as fh:
-        experiment = json.load(fh)
+        if os.sep in name:
+            return path.splitext(name)[0]
 
-    return experiment
+        regulators = self.get_regulators()
 
-def walk_assembly_tree(datadir, root_dir, parse_func):
-    """Walk a directory structure containg clade, species, assembly
+        for species, species_dir in regulators.items():
+            for assembly, assembly_dir in species_dir.items():
+                if name in assembly_dir:
+                    return path.splitext(assembly_dir[name]['file'])[0]
 
-    Call parse_func() for every assembly directory"""
-    genomes = {}
+        return None
 
-    root = path.join(datadir, root_dir)
+    def get_genes(self, name):
+        """Get a list of genes from genome <name>"""
+        genes = []
 
-    for species in os.listdir(root):
-        species_path = path.join(root, species)
-        if not path.isdir(species_path):
-            #logging.debug("skipping non-directory %r" % species_path)
-            continue
+        genome_dir = self.get_genome_by_name(name)
+        if genome_dir is None:
+            return genes
 
-        description_file = path.join(species_path, 'description.json')
-        species_dict = {}
-        try:
-            with open(description_file, 'r') as fh:
-                genomes[species] = json.load(fh)
-                genomes[species]['assemblies'] = species_dict
-        except IOError:
-            genomes[species] = species_dict
+        genome = path.join(genome_dir, 'all.gff')
+        if not path.exists(genome):
+            return genes
 
-        for assembly in os.listdir(species_path):
-            assembly_path = path.join(species_path, assembly)
-            if not path.isdir(assembly_path):
-                #logging.debug("skipping non-directory %r" % assembly_path)
-                continue
+        for line in open(genome, 'r'):
+            match = gene_name.match(line)
+            if match is not None:
+                genes.append(match.group(1))
 
-            assembly_dict = {}
-            species_dict[assembly] = assembly_dict
-
-            parse_func(assembly_path, assembly_dict)
-
-    return genomes
-
-
-def get_genome_by_name(name, datadir):
-    """Take a genome name and return the path to the genome directory"""
-    genomes = get_genomes(datadir=datadir)
-
-    for species, species_dir in genomes.items():
-        if name in species_dir['assemblies']:
-            return path.join(datadir, 'genomes', species, name)
-
-    return None
-
-
-def get_regulator_by_name(name, datadir):
-    """Take a regulator name and return the path to the regulator basename without file extension"""
-
-    if os.sep in name:
-        return path.splitext(name)[0]
-
-    regulators = get_regulators(datadir=datadir)
-
-    for species, species_dir in regulators.items():
-        for assembly, assembly_dir in species_dir.items():
-            if name in assembly_dir:
-                return path.splitext(assembly_dir[name]['file'])[0]
-
-    return None
-
-
-def get_genes(name, datadir):
-    """Get a list of genes from genome <name>"""
-    genes = []
-
-    genome_dir = get_genome_by_name(name, datadir)
-    if genome_dir is None:
         return genes
-
-    genome = path.join(genome_dir, 'all.gff')
-    if not path.exists(genome):
-        return genes
-
-    for line in open(genome, 'r'):
-        match = gene_name.match(line)
-        if match is not None:
-            genes.append(match.group(1))
-
-    return genes
