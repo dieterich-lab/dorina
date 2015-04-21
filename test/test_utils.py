@@ -49,21 +49,20 @@ class TestListDataWithoutOptions(unittest.TestCase):
         for exp in experiments:
             exp['file'] = fake_path
 
-        expected = {
-            'h_sapiens': {
-                'hg19': {
-                    'PARCLIP_scifi': scifi,
-                    'PICTAR_fake01': experiments[0],
-                    'PICTAR_fake02': experiments[1],
-                    'PICTAR_fake023': experiments[2],
-                    'fake024|Pictar': experiments[3]
-                }
-            }
+        expected_hg19 = {
+            'PARCLIP_scifi': scifi,
+            'PICTAR_fake01': experiments[0],
+            'PICTAR_fake02': experiments[1],
+            'PICTAR_fake023': experiments[2],
+            'fake024|Pictar': experiments[3]
         }
 
         got = utils.get_regulators(datadir=datadir)
         self.maxDiff = None
-        self.assertEqual(expected, got)
+
+        self.assertTrue("h_sapiens" in got)
+        self.assertTrue("hg19" in got["h_sapiens"])
+        self.assertEqual(expected_hg19, got["h_sapiens"]["hg19"])
 
 
     def test_parse_experiment(self):
