@@ -61,6 +61,7 @@ class TestListDataWithoutOptions(unittest.TestCase):
         self.maxDiff = None
 
         self.assertTrue("h_sapiens" in got)
+        self.assertTrue("hg18" in got["h_sapiens"])
         self.assertTrue("hg19" in got["h_sapiens"])
         self.assertEqual(expected_hg19, got["h_sapiens"]["hg19"])
 
@@ -116,6 +117,12 @@ class TestListDataWithoutOptions(unittest.TestCase):
         got = utils.get_regulator_by_name(expected, datadir)
         self.assertEqual(expected, got)
 
+        # Make sure that the assembly is not ignored when the
+        # regulator name is not unique in the data directory.  Here we
+        # have PICTAR_fake in hg18 and in hg19.
+        expected = path.join(datadir, 'regulators', 'h_sapiens', 'hg19', 'PICTAR_fake')
+        got = utils.get_regulator_by_name("PICTAR_fake", datadir=datadir)
+        self.assertEqual(expected, got)
 
     def test_get_genes(self):
         """Test utils.get_genes()"""
