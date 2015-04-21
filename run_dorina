@@ -4,9 +4,9 @@
 import sys
 import logging
 import argparse
-from dorina.config import load_config, set_config
-from dorina import utils
+
 from dorina import run
+from dorina.config import load_config, set_config
 
 def main():
     parser = argparse.ArgumentParser(description="Run doRiNA from the command line")
@@ -63,13 +63,14 @@ def main():
 
     load_config(options)
     set_config(options)
+    dorina = run.Dorina(options.data.path)
 
     if options.list_genomes:
-        list_genomes(options.data.path)
+        list_genomes(dorina)
         sys.exit(0)
 
     if options.list_regulators:
-        list_regulators(options.data.path)
+        list_regulators(dorina)
         sys.exit(0)
 
     if not 'genome' in options or options.genome is None:
@@ -79,23 +80,22 @@ def main():
         parser.error("You need to select regulators for set A")
 
 
-    genome = utils.get_genome_by_name(options.genome, options.data.path)
+    genome = dorina.utils.get_genome_by_name(options.genome)
     if genome is None:
         print "Selected genome %r not found." % options.genome
-        list_genomes(options.data.path)
+        list_genomes(dorina)
         sys.exit(1)
 
-    set_a = map(lambda x: utils.get_regulator_by_name(x, options.data.path), options.set_a)
+    set_a = map(lambda x: dorina.utils.get_regulator_by_name(x), options.set_a)
     if set_a.count(None) > 0:
         print "Regulator %r not found." % options.set_a[set_a.index(None)]
-        list_regulators(options.data.path)
+        list_regulators(dorina)
         sys.exit(1)
 
-    result = run.analyse(options.genome, options.set_a, options.match_a,
-                         options.region_a, options.set_b, options.match_b,
-                         options.region_b, options.combine, options.genes,
-                         options.window_a, options.window_b,
-                         datadir=options.data.path)
+    result = dorina.analyse(options.genome, options.set_a, options.match_a,
+                            options.region_a, options.set_b, options.match_b,
+                            options.region_b, options.combine, options.genes,
+                            options.window_a, options.window_b)
     print result,
     sys.exit(0)
 
@@ -113,9 +113,9 @@ def setup_logging(options):
                         level=log_level)
 
 
-def list_genomes(datadir):
+def list_genomes(dorina):
     """List all available genomes"""
-    genomes = utils.get_genomes(datadir)
+    genomes = dorina.utils.get_genomes()
     print "Available genomes:"
     print "------------------"
     for species, species_dict in genomes.items():
@@ -128,9 +128,9 @@ def list_genomes(datadir):
                 print "\t\t\t%s: %s" % gff
 
 
-def list_regulators(datadir):
+def list_regulators(dorina):
     """List all available regulators"""
-    regulators = utils.get_regulators(datadir)
+    regulators = dorina.utils.get_regulators()
     print "Available regulators:"
     print "---------------------"
     for species, species_dict in regulators.items():
