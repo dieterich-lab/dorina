@@ -11,8 +11,9 @@ gene_name = re.compile(r'.*ID=(.*?)($|;\w+)')
 class DorinaUtils:
     def __init__(self, datadir):
         self.datadir = datadir
+        self.genomes = self._genomes()
 
-    def get_genomes(self):
+    def _genomes(self):
         """Get all available genomes"""
         def parse_func(assembly_path, assembly_dict):
             for gff_file in os.listdir(assembly_path):
@@ -101,9 +102,7 @@ class DorinaUtils:
 
     def get_genome_by_name(self, name):
         """Take a genome name and return the path to the genome directory"""
-        genomes = self.get_genomes()
-
-        for species, species_dir in genomes.items():
+        for species, species_dir in self.genomes.items():
             if name in species_dir['assemblies']:
                 return path.join(self.datadir, 'genomes', species, name)
 

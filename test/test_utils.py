@@ -14,8 +14,8 @@ class TestListDataWithoutOptions(unittest.TestCase):
         self.maxDiff = None
 
 
-    def test_get_genomes(self):
-        """Test utils.get_genomes()"""
+    def test_genomes(self):
+        """Test utils.genomes"""
         expected = {
             'h_sapiens': {
                 'id': 'h_sapiens',
@@ -35,7 +35,7 @@ class TestListDataWithoutOptions(unittest.TestCase):
             }
         }
 
-        got = utils.get_genomes()
+        got = utils.genomes
         self.assertEqual(expected, got)
 
 
