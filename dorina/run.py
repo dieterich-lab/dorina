@@ -40,12 +40,11 @@ class Dorina:
                 result = None
             return result
 
-        regulators_a = map(lambda x: self._get_regulator_bedtool(x), set_a)
-        regulators_b = []
+        regulators_a = self._regulators_from_names(set_a)
+        regulators_b = self._regulators_from_names(set_b)
 
         result_a = compute_result(region_a, regulators_a, match_a, window_a)
         if set_b is not None:
-            regulators_b = map(lambda x: self._get_regulator_bedtool(x), set_b)
             result_b = compute_result(region_b, regulators_b, match_b, window_b)
             if combine == 'or':
                 final_results = self._merge_regulators([result_a, result_b])
@@ -99,7 +98,13 @@ class Dorina:
             return bed
         else:
             return bed.filter(lambda x: x.name in genes).saveas()
+
+    # TODO: write regulator class
+    def _regulators_from_names(self, names):
+        if names:
+            return map(lambda x: self._get_regulator_bedtool(x), names)
         else:
+            return []
 
     def _get_regulator_bedtool(self, regulator_name):
         """get the bedtool object for a regulator"""
