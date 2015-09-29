@@ -77,13 +77,9 @@ class Dorina:
 
     def _add_slop(self, feature, genome_name, slop):
         """Add specified slop before and after a regulator"""
-        return feature.slop(g=self._get_genome_chromfile(genome_name), b=slop)
-
-    def _get_genome_chromfile(self, genome_name):
-        """Get the path to the .genome file listing chromosome sizes"""
-        return path.join(self.utils.get_genome_by_name(genome_name),
-                         "{}.genome".format(genome_name))
-
+        genome = self.utils.get_genome_by_name(genome_name)
+        chromfile = path.join(genome, "{}.genome".format(genome_name))
+        return feature.slop(g=chromfile, b=slop)
 
     def _get_genome_bedtool(self, genome_name, region, genes=None):
         """get the bedtool object for a genome depending on the name and the region"""

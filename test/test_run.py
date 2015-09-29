@@ -145,12 +145,6 @@ chr1	doRiNA2	gene	1350	3360	.	+	.	ID=gene01.02	chr1	1350	1360	PICTAR#fake01*fake
                             'hg19', 300)
         self.assertEqual(expected, got)
 
-    def test_get_genome_chromfile(self):
-        """Test run._get_genome_chromfile()"""
-        expected = path.join(utils.get_genome_by_name('hg19'), 'hg19.genome')
-        got = run._get_genome_chromfile('hg19')
-        self.assertEqual(expected, got)
-
 
     def test_get_genome_bedtool(self):
         """Test run._get_genome_bedtool()"""
