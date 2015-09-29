@@ -44,7 +44,9 @@ class Dorina:
         regulators_b = self._regulators_from_names(set_b)
 
         result_a = compute_result(region_a, regulators_a, match_a, window_a)
-        if set_b is not None:
+
+        # Combine with set B, if exists
+        if set_b:
             result_b = compute_result(region_b, regulators_b, match_b, window_b)
             if combine == 'or':
                 final_results = self._merge_regulators([result_a, result_b])
