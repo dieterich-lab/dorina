@@ -70,12 +70,10 @@ class Dorina:
 
     def _merge_regulators(self, regulators):
         """Merge a list of regulators using BedTool.cat"""
-        regulator = regulators[0]
-        for i in range(1, len(regulators)):
-            logging.debug('merging regulator %r' % regulators[i])
-            regulator = regulator.cat(regulators[i], postmerge=False)
-
-        return regulator
+        if len(regulators) > 1:
+            return BedTool.cat(*regulators, postmerge=False)
+        else:
+            return regulators[0]
 
     def _add_slop(self, feature, genome_name, slop):
         """Add specified slop before and after a regulator"""
