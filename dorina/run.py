@@ -103,18 +103,17 @@ class Dorina:
 
     def _get_regulator_bedtool(self, regulator_name):
         """get the bedtool object for a regulator"""
-        def filter_func(rec, name):
-            if '_' in name:
-                filter_name = '_'.join(name.split('_')[1:])
-            else:
-                filter_name = name
-            res = (filter_name + '*' in rec.name) or (filter_name == rec.name)
-            return res
 
-        if os.sep in regulator_name or '_all' in regulator_name:
-            bt = BedTool('%s.bed' % self.utils.get_regulator_by_name(regulator_name))
-        else:
-            bt = BedTool('%s.bed' % self.utils.get_regulator_by_name(regulator_name)).filter(filter_func, regulator_name).saveas()
+        def by_name(rec):
+            name = regulator_name
+            # Drop first part before underscore.
+            if "_" in name:
+                name = "_".join(name.split("_")[1:])
+            return (name + "*" in rec.name) or (name == rec.name)
+
+        bt = BedTool('%s.bed' % self.utils.get_regulator_by_name(regulator_name))
+        if os.sep not in regulator_name and '_all' not in regulator_name:
+            bt = bt.filter(by_name).saveas()
 
         if len(bt) > 0 and len(bt[0].fields) > 6:
             bt = bt.bed6().saveas()
