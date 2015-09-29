@@ -88,20 +88,17 @@ class Dorina:
     def _get_genome_bedtool(self, genome_name, region, genes=None):
         """get the bedtool object for a genome depending on the name and the region"""
         genome = self.utils.get_genome_by_name(genome_name)
-        if region == "any":
-            filename = path.join(genome, 'all.gff')
-        elif region == "CDS":
-            filename = path.join(genome, 'cds.gff')
-        elif region == "3prime":
-            filename = path.join(genome, '3_utr.gff')
-        elif region == "5prime":
-            filename = path.join(genome, '5_utr.gff')
-        elif region == "intron":
-            filename = path.join(genome, 'intron.gff')
-        elif region == "intergenic":
-            filename = path.join(genome, 'intergenic.gff')
-        else:
+        mapping = { "any":        "all",
+                    "CDS":        "cds",
+                    "3prime":     "3_utr",
+                    "5prime":     "5_utr",
+                    "intron":     "intron",
+                    "intergenic": "intergenic" }
+
+        if region not in mapping:
             raise ValueError("Invalid region: %r" % region)
+        else:
+            filename = path.join(genome, "%s.gff" % mapping[region])
 
         if genes is None or 'all' in genes:
             return BedTool(filename)
