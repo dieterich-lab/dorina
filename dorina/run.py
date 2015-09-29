@@ -31,15 +31,13 @@ class Dorina:
                 if window > 0:
                     genome_bed = self._add_slop(genome_bed, genome, window)
 
-
-            result = None
             if match == 'any':
                 result = genome_bed.intersect(self._merge_regulators(_regulators), wa=True, u=True)
             elif match == 'all':
-                results = [genome_bed]
-                results.extend(_regulators)
-                result = reduce(lambda acc, x: acc.intersect(x, wa=True, u=True), results)
-
+                result = reduce(lambda acc, x: acc.intersect(x, wa=True, u=True),
+                                [genome_bed] + _regulators)
+            else:
+                result = None
             return result
 
         regulators_a = map(lambda x: self._get_regulator_bedtool(x), set_a)
