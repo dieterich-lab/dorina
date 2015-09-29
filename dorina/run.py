@@ -92,12 +92,14 @@ class Dorina:
         if region not in mapping:
             raise ValueError("Invalid region: %r" % region)
         else:
-            filename = path.join(genome, "%s.gff" % mapping[region])
+            bed = BedTool(path.join(genome, "%s.gff" % mapping[region]))
 
+        # Optionally, filter by gene.
         if genes is None or 'all' in genes:
-            return BedTool(filename)
+            return bed
         else:
-            return BedTool(filename).filter(lambda x: x.name in genes).saveas()
+            return bed.filter(lambda x: x.name in genes).saveas()
+        else:
 
     def _get_regulator_bedtool(self, regulator_name):
         """get the bedtool object for a regulator"""
