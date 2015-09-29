@@ -42,6 +42,7 @@ class Dorina:
 
         regulators_a = self._regulators_from_names(set_a)
         regulators_b = self._regulators_from_names(set_b)
+        all_regulators = self._merge_regulators(regulators_a + regulators_b)
 
         result_a = compute_result(region_a, regulators_a, match_a, window_a)
 
@@ -49,23 +50,19 @@ class Dorina:
         if set_b:
             result_b = compute_result(region_b, regulators_b, match_b, window_b)
             if combine == 'or':
-                final_results = self._merge_regulators([result_a, result_b])
+                combined = self._merge_regulators([result_a, result_b])
             elif combine == 'and':
-                final_results = result_a.intersect(result_b, wa=True, u=True)
+                combined = result_a.intersect(result_b, wa=True, u=True)
             elif combine == 'xor':
                 not_in_b = result_a.intersect(result_b, v=True, wa=True)
                 not_in_a = result_b.intersect(result_a, v=True, wa=True)
-                final_results = self._merge_regulators([not_in_b, not_in_a])
+                combined = self._merge_regulators([not_in_b, not_in_a])
             elif combine == 'not':
-                final_results = result_a.intersect(result_b, v=True, wa=True)
-
+                combined = result_a.intersect(result_b, v=True, wa=True)
         else:
-            final_results = result_a
+            combined = result_a
 
-        regulators_a.extend(regulators_b)
-        regulator = self._merge_regulators(regulators_a)
-        final_results = final_results.intersect(regulator, wa=True, wb=True)
-        return final_results
+        return combined.intersect(all_regulators, wa=True, wb=True)
 
     def _merge_regulators(self, regulators):
         """Merge a list of regulators using BedTool.cat"""
