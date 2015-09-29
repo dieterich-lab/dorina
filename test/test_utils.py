@@ -39,8 +39,8 @@ class TestListDataWithoutOptions(unittest.TestCase):
         self.assertEqual(expected, got)
 
 
-    def test_get_regulators(self):
-        """Test utils.get_regulators()"""
+    def test_regulators(self):
+        """Test utils.regulators"""
         basedir = path.join(datadir, 'regulators', 'h_sapiens', 'hg19')
         scifi_path = path.join(datadir, basedir, 'PARCLIP_scifi.json')
         scifi = utils.parse_experiment(scifi_path)[0]
@@ -58,7 +58,7 @@ class TestListDataWithoutOptions(unittest.TestCase):
             'fake024|Pictar': experiments[3]
         }
 
-        got = utils.get_regulators()
+        got = utils.regulators
         self.maxDiff = None
 
         self.assertTrue("h_sapiens" in got)

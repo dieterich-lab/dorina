@@ -12,6 +12,7 @@ class DorinaUtils:
     def __init__(self, datadir):
         self.datadir = datadir
         self.genomes = self._genomes()
+        self.regulators = self._regulators()
 
     def _genomes(self):
         """Get all available genomes"""
@@ -28,7 +29,7 @@ class DorinaUtils:
 
         return self.walk_assembly_tree('genomes', parse_func)
 
-    def get_regulators(self):
+    def _regulators(self):
         """Get all available regulators"""
         def parse_func(root, regulators):
             for experiment in os.listdir(root):
@@ -114,9 +115,7 @@ class DorinaUtils:
         if os.sep in name:
             return path.splitext(name)[0]
 
-        regulators = self.get_regulators()
-
-        for species, species_dir in regulators.items():
+        for species, species_dir in self.regulators.items():
             for assembly, assembly_dir in species_dir.items():
                 if name in assembly_dir:
                     return path.splitext(assembly_dir[name]['file'])[0]
