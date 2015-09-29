@@ -11,9 +11,12 @@ class Dorina:
     def __init__(self, datadir):
         self.utils = utils.DorinaUtils(datadir)
 
-    def analyse(self, genome, set_a, match_a='any', region_a='any',
+    def analyse(self, genome,
+                set_a,      match_a='any', region_a='any',
                 set_b=None, match_b='any', region_b='any',
-                combine='or', genes=None, window_a=-1, window_b=-1):
+                combine='or', genes=None,
+                window_a=-1,
+                window_b=-1):
         """Run doRiNA analysis"""
         logging.debug("analyse(%r, %r(%s) <-'%s'-> %r(%s))" % (genome, set_a, match_a, combine, set_b, match_b))
 
