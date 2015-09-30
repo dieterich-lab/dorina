@@ -30,7 +30,8 @@ class DorinaUtils:
         return self.walk_assembly_tree('genomes', parse_func)
 
     def _regulators(self):
-        """Get all available regulators"""
+        """Get all available regulators.  A valid regulator must have a JSON metadata
+file as well as a BED file containing the data."""
         def parse_func(root, regulators):
             for experiment in os.listdir(root):
                 experiment_path = path.join(root, experiment)
