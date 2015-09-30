@@ -179,15 +179,3 @@ chr1	doRiNA2	gene	1350	3360	.	+	.	ID=gene01.02	chr1	1350	1360	PICTAR#fake01*fake
                 lambda x: x.name == "gene01.02").saveas()
         got = run._get_genome_bedtool('hg19', 'any', genes=['gene01.02'])
         self.assertEqual(expected, got)
-
-
-    def test_get_regulator_bedtool(self):
-        """Test run._get_regulator_bedtool()"""
-        expected = BedTool('%s.bed' % utils.get_regulator_by_name('PARCLIP_scifi')).bed6()
-        got = run._get_regulator_bedtool('PARCLIP_scifi')
-        self.assertEqual(expected, got)
-
-        manual = path.join(datadir, 'manual.bed')
-        expected = BedTool(manual).bed6()
-        got = run._get_regulator_bedtool(manual)
-        self.assertEqual(expected, got)
