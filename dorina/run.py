@@ -40,8 +40,8 @@ class Dorina:
                 result = None
             return result
 
-        regulators_a = self._regulators_from_names(set_a)
-        regulators_b = self._regulators_from_names(set_b)
+        regulators_a = self.utils.regulators_from_names(set_a, assembly=genome)
+        regulators_b = self.utils.regulators_from_names(set_b, assembly=genome)
         all_regulators = self._merge_regulators(regulators_a + regulators_b)
 
         result_a = compute_result(region_a, regulators_a, match_a, window_a)
@@ -97,29 +97,3 @@ class Dorina:
             return bed
         else:
             return bed.filter(lambda x: x.name in genes).saveas()
-
-    # TODO: write regulator class
-    def _regulators_from_names(self, names):
-        if names:
-            return map(lambda x: self._get_regulator_bedtool(x), names)
-        else:
-            return []
-
-    def _get_regulator_bedtool(self, regulator_name):
-        """get the bedtool object for a regulator"""
-
-        def by_name(rec):
-            name = regulator_name
-            # Drop first part before underscore.
-            if "_" in name:
-                name = "_".join(name.split("_")[1:])
-            return (name + "*" in rec.name) or (name == rec.name)
-
-        bt = BedTool('%s.bed' % self.utils.get_regulator_by_name(regulator_name))
-        if os.sep not in regulator_name and '_all' not in regulator_name:
-            bt = bt.filter(by_name).saveas()
-
-        if len(bt) > 0 and len(bt[0].fields) > 6:
-            bt = bt.bed6().saveas()
-
-        return bt
