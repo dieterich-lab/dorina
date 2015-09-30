@@ -101,28 +101,33 @@ class TestListDataWithoutOptions(unittest.TestCase):
         self.assertEqual(expected, got)
 
 
-    def test_get_regulator_by_name(self):
-        """Test utils.get_regulator_by_name()"""
-        got = utils.get_regulator_by_name("invalid")
-        self.assertIsNone(got)
+    def test_make_regulator(self):
+        """Test utils.make_regulator()"""
+        # TODO: expect an error, not None!
+        #got = utils.make_regulator("invalid", "hg19")
+        #self.assertIsNone(got)
 
         expected = path.join(datadir, 'regulators', 'h_sapiens', 'hg19', 'PARCLIP_scifi')
-        got = utils.get_regulator_by_name("PARCLIP_scifi")
+        got = utils.make_regulator("PARCLIP_scifi", "hg19").basename
         self.assertEqual(expected, got)
 
         expected = path.join(datadir, 'regulators', 'h_sapiens', 'hg19', 'PICTAR_fake')
-        got = utils.get_regulator_by_name("PICTAR_fake02")
+        got = utils.make_regulator("PICTAR_fake02", "hg19").basename
         self.assertEqual(expected, got)
 
-        expected = path.join(datadir, 'manual')
-        got = utils.get_regulator_by_name(expected)
+        expected = path.join(datadir, 'manual.bed')
+        got = utils.make_regulator(expected).path
         self.assertEqual(expected, got)
 
         # Make sure that the assembly is not ignored when the
         # regulator name is not unique in the data directory.  Here we
         # have PICTAR_fake in hg18 and in hg19.
         expected = path.join(datadir, 'regulators', 'h_sapiens', 'hg19', 'PICTAR_fake')
-        got = utils.get_regulator_by_name("PICTAR_fake")
+        got = utils.make_regulator("PICTAR_fake01", "hg19").basename
+        self.assertEqual(expected, got)
+
+        expected = path.join(datadir, 'regulators', 'h_sapiens', 'hg18', 'PICTAR_fake')
+        got = utils.make_regulator("PICTAR_fake01", "hg18").basename
         self.assertEqual(expected, got)
 
     def test_get_genes(self):

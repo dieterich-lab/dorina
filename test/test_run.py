@@ -141,8 +141,8 @@ chr1	doRiNA2	gene	1350	3360	.	+	.	ID=gene01.02	chr1	1350	1360	PICTAR#fake01*fake
         chr1    2050    2660    PARCLIP#scifi*scifi_intron  5   +
 """
         expected = BedTool(slop_string, from_string=True)
-        got = run._add_slop(BedTool(run._get_regulator_bedtool('PARCLIP_scifi')),
-                            'hg19', 300)
+        regulator = utils.make_regulator('PARCLIP_scifi', "hg19")
+        got = run._add_slop(regulator.bed, 'hg19', 300)
         self.assertEqual(expected, got)
 
 
