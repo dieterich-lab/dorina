@@ -86,9 +86,11 @@ def main():
         list_genomes(dorina)
         sys.exit(1)
 
-    set_a = map(lambda x: dorina.utils.get_regulator_by_name(x), options.set_a)
-    if set_a.count(None) > 0:
-        print "Regulator %r not found." % options.set_a[set_a.index(None)]
+    try:
+        set_a = map(lambda x: dorina.utils.make_regulator(x, assembly=options.genome).basename,
+                    options.set_a)
+    except ValueError, e:
+        print e.message
         list_regulators(dorina)
         sys.exit(1)
 
@@ -115,7 +117,7 @@ def setup_logging(options):
 
 def list_genomes(dorina):
     """List all available genomes"""
-    genomes = dorina.utils.get_genomes()
+    genomes = dorina.utils.genomes
     print "Available genomes:"
     print "------------------"
     for species, species_dict in genomes.items():
@@ -130,7 +132,7 @@ def list_genomes(dorina):
 
 def list_regulators(dorina):
     """List all available regulators"""
-    regulators = dorina.utils.get_regulators()
+    regulators = dorina.utils.regulators
     print "Available regulators:"
     print "---------------------"
     for species, species_dict in regulators.items():
