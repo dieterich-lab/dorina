@@ -52,20 +52,11 @@ class DorinaUtils:
 
         return genomes
 
-    def get_genome_by_name(self, name):
-        """Take a genome name and return the path to the genome directory"""
-        for species, species_dir in self.genomes.items():
-            if name in species_dir['assemblies']:
-                return os.path.join(self.datadir, 'genomes', species, name)
-
-        # TODO: never return None!
-        return None
-
     def get_genes(self, name):
         """Get a list of genes from genome <name>"""
         genes = []
 
-        genome_dir = self.get_genome_by_name(name)
+        genome_dir = Genome.path_by_name(self.genomes, name)
         if genome_dir is None:
             return genes
 

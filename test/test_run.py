@@ -152,31 +152,32 @@ chr1	doRiNA2	gene	1350	3360	.	+	.	ID=gene01.02	chr1	1350	1360	PICTAR#fake01*fake
         # should raise a ValueError for an invalid region
         self.assertRaises(ValueError, run._get_genome_bedtool, 'hg19', 'invalid')
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), 'all.gff'))
+        directory = utils.genomes
+        expected = BedTool(path.join(Genome.path_by_name(directory, 'hg19'), 'all.gff'))
         got = run._get_genome_bedtool('hg19', 'any')
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), 'cds.gff'))
+        expected = BedTool(path.join(Genome.path_by_name(directory, 'hg19'), 'cds.gff'))
         got = run._get_genome_bedtool('hg19', 'CDS')
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), '3_utr.gff'))
+        expected = BedTool(path.join(Genome.path_by_name(directory, 'hg19'), '3_utr.gff'))
         got = run._get_genome_bedtool('hg19', '3prime')
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), '5_utr.gff'))
+        expected = BedTool(path.join(Genome.path_by_name(directory, 'hg19'), '5_utr.gff'))
         got = run._get_genome_bedtool('hg19', '5prime')
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), 'intron.gff'))
+        expected = BedTool(path.join(Genome.path_by_name(directory, 'hg19'), 'intron.gff'))
         got = run._get_genome_bedtool('hg19', 'intron')
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), 'intergenic.gff'))
+        expected = BedTool(path.join(Genome.path_by_name(directory, 'hg19'), 'intergenic.gff'))
         got = run._get_genome_bedtool('hg19', 'intergenic')
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(utils.get_genome_by_name('hg19'), 'all.gff')).filter(
+        expected = BedTool(path.join(Genome.path_by_name(directory, 'hg19'), 'all.gff')).filter(
                 lambda x: x.name == "gene01.02").saveas()
         got = run._get_genome_bedtool('hg19', 'any', genes=['gene01.02'])
         self.assertEqual(expected, got)

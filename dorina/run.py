@@ -6,6 +6,7 @@ from os import path
 from pybedtools import BedTool
 
 from dorina import utils
+from dorina.genome    import Genome
 from dorina.regulator import Regulator
 
 class Dorina:
@@ -73,7 +74,7 @@ class Dorina:
 
     def _get_genome_bedtool(self, genome_name, region, genes=None):
         """get the bedtool object for a genome depending on the name and the region"""
-        genome = self.utils.get_genome_by_name(genome_name)
+        genome = Genome.path_by_name(self.utils.genomes, genome_name)
         mapping = { "any":        "all",
                     "CDS":        "cds",
                     "3prime":     "3_utr",

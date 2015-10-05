@@ -6,6 +6,7 @@ import logging
 import argparse
 
 from dorina import run
+from dorina.genome import Genome
 from dorina.config import load_config, set_config
 
 def main():
@@ -80,14 +81,14 @@ def main():
         parser.error("You need to select regulators for set A")
 
 
-    genome = dorina.utils.get_genome_by_name(options.genome)
+    genome = Genome.path_by_name(dorina.utils.genomes, options.genome)
     if genome is None:
         print "Selected genome %r not found." % options.genome
         list_genomes(dorina)
         sys.exit(1)
 
     try:
-        set_a = map(lambda x: dorina.utils.make_regulator(x, assembly=options.genome).basename,
+        set_a = map(lambda x: Regulator.from_name(dorina.utils.regulators, x, assembly=options.genome).basename,
                     options.set_a)
     except ValueError, e:
         print e.message

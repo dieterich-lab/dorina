@@ -74,23 +74,3 @@ class TestListDataWithoutOptions(unittest.TestCase):
         self.assertTrue("hg18" in got["h_sapiens"])
         self.assertTrue("hg19" in got["h_sapiens"])
         self.assertEqual(expected_hg19, got["h_sapiens"]["hg19"])
-
-
-    def test_get_genome_by_name(self):
-        """Test utils.get_genome_by_name()"""
-        got = utils.get_genome_by_name("invalid")
-        self.assertIsNone(got)
-
-        expected = path.join(datadir, 'genomes', 'h_sapiens', 'hg19')
-        got = utils.get_genome_by_name("hg19")
-        self.assertEqual(expected, got)
-
-    def test_get_genes(self):
-        """Test utils.get_genes()"""
-        expected = ['gene01.01', 'gene01.02']
-        got = utils.get_genes('hg19')
-        self.assertEqual(expected, got)
-
-        expected = []
-        got = utils.get_genes('invalid')
-        self.assertEqual(expected, got)
