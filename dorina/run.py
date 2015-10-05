@@ -6,6 +6,7 @@ from os import path
 from pybedtools import BedTool
 
 from dorina import utils
+from dorina.regulator import Regulator
 
 class Dorina:
     def __init__(self, datadir):
@@ -32,7 +33,7 @@ class Dorina:
                     genome_bed = self._add_slop(genome_bed, genome, window)
 
             if match == 'any':
-                result = genome_bed.intersect(self._merge_regulators(_regulators), wa=True, u=True)
+                result = genome_bed.intersect(Regulator.merge(_regulators), wa=True, u=True)
             elif match == 'all':
                 result = reduce(lambda acc, x: acc.intersect(x, wa=True, u=True),
                                 [genome_bed] + _regulators)
@@ -42,7 +43,7 @@ class Dorina:
 
         regulators_a = self.utils.regulators_from_names(set_a, assembly=genome)
         regulators_b = self.utils.regulators_from_names(set_b, assembly=genome)
-        all_regulators = self._merge_regulators(regulators_a + regulators_b)
+        all_regulators = Regulator.merge(regulators_a + regulators_b)
 
         result_a = compute_result(region_a, regulators_a, match_a, window_a)
 
@@ -50,26 +51,19 @@ class Dorina:
         if set_b:
             result_b = compute_result(region_b, regulators_b, match_b, window_b)
             if combine == 'or':
-                combined = self._merge_regulators([result_a, result_b])
+                combined = Regulator.merge([result_a, result_b])
             elif combine == 'and':
                 combined = result_a.intersect(result_b, wa=True, u=True)
             elif combine == 'xor':
                 not_in_b = result_a.intersect(result_b, v=True, wa=True)
                 not_in_a = result_b.intersect(result_a, v=True, wa=True)
-                combined = self._merge_regulators([not_in_b, not_in_a])
+                combined = Regulator.merge([not_in_b, not_in_a])
             elif combine == 'not':
                 combined = result_a.intersect(result_b, v=True, wa=True)
         else:
             combined = result_a
 
         return combined.intersect(all_regulators, wa=True, wb=True)
-
-    def _merge_regulators(self, regulators):
-        """Merge a list of regulators using BedTool.cat"""
-        if len(regulators) > 1:
-            return BedTool.cat(*regulators, postmerge=False)
-        else:
-            return regulators[0]
 
     def _add_slop(self, feature, genome_name, slop):
         """Add specified slop before and after a regulator"""

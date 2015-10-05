@@ -26,3 +26,12 @@ class Regulator:
             bt = bt.bed6().saveas()
 
         return bt
+
+    @staticmethod
+    def merge(regulators):
+        """Merge a list of regulators using BedTool.cat"""
+        if len(regulators) > 1:
+            return BedTool.cat(*regulators, postmerge=False)
+        else:
+            return regulators[0]
+
