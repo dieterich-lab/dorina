@@ -1,4 +1,5 @@
 import os
+import json
 from pybedtools import BedTool
 
 class Regulator:
@@ -62,3 +63,37 @@ class Regulator:
                        names)
         else:
             return []
+
+    @staticmethod
+    def parse_func(root, regulators):
+        """Parse function used to initialise the regulators from the data directory.
+Gets all available regulators.  A valid regulator must have a JSON metadata
+file as well as a BED file containing the data.
+
+        """
+
+        def parse_experiment(filename):
+            experiment = {}
+            with open(filename, 'r') as fh:
+                experiment = json.load(fh)
+            return experiment
+
+        for experiment in os.listdir(root):
+            experiment_path = os.path.join(root, experiment)
+            if not os.path.isfile(experiment_path):
+                continue
+
+            experiment_root, experiment_ext = os.path.splitext(experiment)
+            if not experiment_ext.lower() == '.json':
+                continue
+
+            bedfile = os.path.join(root, '%s.%s' % (experiment_root, 'bed'))
+            if not os.path.isfile(bedfile):
+                continue
+
+            experiments = parse_experiment(experiment_path)
+            for experiment_dict in experiments:
+                experiment_dict['file'] = experiment_path
+                regulators[experiment_dict['id']] = experiment_dict
+
+        return regulators

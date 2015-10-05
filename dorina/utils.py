@@ -31,41 +31,7 @@ class DorinaUtils:
         return self.walk_assembly_tree('genomes', parse_func)
 
     def _regulators(self):
-        """Get all available regulators.  A valid regulator must have a JSON metadata
-file as well as a BED file containing the data."""
-        def parse_func(root, regulators):
-            for experiment in os.listdir(root):
-                experiment_path = path.join(root, experiment)
-                if not path.isfile(experiment_path):
-                    #logging.debug("skipping non-file %r" % experiment_path)
-                    continue
-
-                experiment_root, experiment_ext = path.splitext(experiment)
-                if not experiment_ext.lower() == '.json':
-                    #logging.debug("skipping non-JSON file %r" % experiment_path)
-                    continue
-
-                bedfile = path.join(root, '%s.%s' % (experiment_root, 'bed'))
-                #logging.debug("looking for %r" % bedfile)
-                if not path.isfile(bedfile):
-                    #logging.debug("No bedfile for experiment %r" % experiment_path)
-                    continue
-
-                experiments = self.parse_experiment(experiment_path)
-                for experiment_dict in experiments:
-                    experiment_dict['file'] = experiment_path
-                    regulators[experiment_dict['id']] = experiment_dict
-
-        return self.walk_assembly_tree('regulators', parse_func)
-
-    def parse_experiment(self, filename):
-        """Parse experimental description from a file name"""
-        #logging.debug("Parsing experimental description from %r" % filename)
-        experiment = {}
-        with open(filename, 'r') as fh:
-            experiment = json.load(fh)
-
-        return experiment
+        return self.walk_assembly_tree('regulators', Regulator.parse_func)
 
     def walk_assembly_tree(self, root_dir, parse_func):
         """Walk a directory structure containg clade, species, assembly

@@ -3,6 +3,8 @@
 import unittest
 from os import path
 from argparse import Namespace
+import json
+
 import dorina
 from dorina import config
 from dorina.regulator import Regulator
@@ -44,11 +46,16 @@ class TestListDataWithoutOptions(unittest.TestCase):
     def test_regulators(self):
         """Test utils.regulators"""
         basedir = path.join(datadir, 'regulators', 'h_sapiens', 'hg19')
+
         scifi_path = path.join(datadir, basedir, 'PARCLIP_scifi.json')
-        scifi = utils.parse_experiment(scifi_path)[0]
+        with open(scifi_path, 'r') as fh:
+            scifi = json.load(fh)[0]
         scifi['file'] = scifi_path
+
         fake_path = path.join(datadir, basedir, 'PICTAR_fake.json')
-        experiments = utils.parse_experiment(fake_path)
+        with open(fake_path, 'r') as fh:
+            experiments = json.load(fh)
+
         for exp in experiments:
             exp['file'] = fake_path
 
@@ -67,30 +74,6 @@ class TestListDataWithoutOptions(unittest.TestCase):
         self.assertTrue("hg18" in got["h_sapiens"])
         self.assertTrue("hg19" in got["h_sapiens"])
         self.assertEqual(expected_hg19, got["h_sapiens"]["hg19"])
-
-
-    def test_parse_experiment(self):
-        """Test utils.parse_experiment()"""
-        expected = [{
-            'id': 'PARCLIP_scifi',
-            'experiment': 'PARCLIP',
-            'summary': 'Experimental summary',
-            'description': 'Long description here',
-            'methods': 'Experimental methods section',
-            'credits': 'Credits',
-            'references': [
-                { 'title': 'A very important publication',
-                  'authors': ['Jules Verne', 'Orson Wells'],
-                  'pages': '23-42', 'journal': 'Annals of Science Fiction',
-                  'year': '1870',
-                  'pubmed': 'http://www.ncbi.nlm.nih.gov/pubmed/12345678'
-                }
-            ]
-        }]
-
-        basedir = path.join(datadir, 'regulators', 'h_sapiens', 'hg19')
-        got = utils.parse_experiment(path.join(datadir, basedir, 'PARCLIP_scifi.json'))
-        self.assertEqual(expected, got)
 
 
     def test_get_genome_by_name(self):
