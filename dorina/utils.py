@@ -5,6 +5,8 @@ import os
 import json
 from os import path
 import re
+
+from dorina.genome    import Genome
 from dorina.regulator import Regulator
 
 gene_name = re.compile(r'.*ID=(.*?)($|;\w+)')
@@ -16,19 +18,7 @@ class DorinaUtils:
         self.regulators = self._regulators()
 
     def _genomes(self):
-        """Get all available genomes"""
-        def parse_func(assembly_path, assembly_dict):
-            for gff_file in os.listdir(assembly_path):
-                gff_path = path.join(assembly_path, gff_file)
-                if not path.isfile(gff_path):
-                    #logging.debug("skipping non-file %r" % gff_path)
-                    continue
-
-                root, ext = path.splitext(gff_file)
-                if ext in ('.gff', '.bed'):
-                    assembly_dict[root] = True
-
-        return self.walk_assembly_tree('genomes', parse_func)
+        return self.walk_assembly_tree('genomes', Genome.parse_func)
 
     def _regulators(self):
         return self.walk_assembly_tree('regulators', Regulator.parse_func)
