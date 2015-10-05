@@ -14,14 +14,8 @@ gene_name = re.compile(r'.*ID=(.*?)($|;\w+)')
 class DorinaUtils:
     def __init__(self, datadir):
         self.datadir = datadir
-        self.genomes = self._genomes()
-        self.regulators = self._regulators()
-
-    def _genomes(self):
-        return self.walk_assembly_tree('genomes', Genome.parse_func)
-
-    def _regulators(self):
-        return self.walk_assembly_tree('regulators', Regulator.parse_func)
+        self.genomes = self.walk_assembly_tree('genomes', Genome.parse_func)
+        self.regulators = self.walk_assembly_tree('regulators', Regulator.parse_func)
 
     def walk_assembly_tree(self, root_dir, parse_func):
         """Walk a directory structure containg clade, species, assembly
