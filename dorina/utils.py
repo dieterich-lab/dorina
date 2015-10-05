@@ -130,28 +130,3 @@ file as well as a BED file containing the data."""
                 genes.append(match.group(1))
 
         return genes
-
-    def make_regulator(self, name_or_path, assembly=None):
-        if os.sep in name_or_path:
-            return Regulator("custom", name_or_path, True)
-
-        if not assembly:
-            raise ValueError("Must provide assembly")
-
-        filename = None
-        for species, species_dir in self.regulators.items():
-            for _assembly, assembly_dir in species_dir.items():
-                if assembly == _assembly and name_or_path in assembly_dir:
-                    basename = path.splitext(assembly_dir[name_or_path]['file'])[0]
-                    filename = basename + ".bed"
-
-        if not filename or not path.isfile(filename):
-            raise ValueError("Could not find regulator: %s" % name_or_path)
-
-        return Regulator(name_or_path, filename, False)
-
-    def regulators_from_names(self, names, assembly):
-        if names:
-            return map(lambda x: self.make_regulator(x, assembly).bed, names)
-        else:
-            return []

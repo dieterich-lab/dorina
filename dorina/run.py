@@ -41,8 +41,8 @@ class Dorina:
                 result = None
             return result
 
-        regulators_a = self.utils.regulators_from_names(set_a, assembly=genome)
-        regulators_b = self.utils.regulators_from_names(set_b, assembly=genome)
+        regulators_a = Regulator.from_names(self.utils.regulators, set_a, assembly=genome)
+        regulators_b = Regulator.from_names(self.utils.regulators, set_b, assembly=genome)
         all_regulators = Regulator.merge(regulators_a + regulators_b)
 
         result_a = compute_result(region_a, regulators_a, match_a, window_a)

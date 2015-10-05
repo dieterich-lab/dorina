@@ -7,6 +7,7 @@ from pybedtools import BedTool
 
 from dorina import config
 from dorina import run
+from dorina.regulator import Regulator
 
 datadir = path.join(path.dirname(path.abspath(__file__)), 'data')
 run = run.Dorina(datadir)
@@ -141,7 +142,7 @@ chr1	doRiNA2	gene	1350	3360	.	+	.	ID=gene01.02	chr1	1350	1360	PICTAR#fake01*fake
         chr1    2050    2660    PARCLIP#scifi*scifi_intron  5   +
 """
         expected = BedTool(slop_string, from_string=True)
-        regulator = utils.make_regulator('PARCLIP_scifi', "hg19")
+        regulator = Regulator.from_name(utils.regulators, 'PARCLIP_scifi', "hg19")
         got = run._add_slop(regulator.bed, 'hg19', 300)
         self.assertEqual(expected, got)
 
