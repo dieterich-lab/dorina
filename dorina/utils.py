@@ -3,7 +3,6 @@
 import logging
 import os
 import json
-from os import path
 import re
 
 from dorina.genome    import Genome
@@ -23,15 +22,15 @@ class DorinaUtils:
         Call parse_func() for every assembly directory"""
         genomes = {}
 
-        root = path.join(self.datadir, root_dir)
+        root = os.path.join(self.datadir, root_dir)
 
         for species in os.listdir(root):
-            species_path = path.join(root, species)
-            if not path.isdir(species_path):
+            species_path = os.path.join(root, species)
+            if not os.path.isdir(species_path):
                 #logging.debug("skipping non-directory %r" % species_path)
                 continue
 
-            description_file = path.join(species_path, 'description.json')
+            description_file = os.path.join(species_path, 'description.json')
             species_dict = {}
             try:
                 with open(description_file, 'r') as fh:
@@ -41,8 +40,8 @@ class DorinaUtils:
                 genomes[species] = species_dict
 
             for assembly in os.listdir(species_path):
-                assembly_path = path.join(species_path, assembly)
-                if not path.isdir(assembly_path):
+                assembly_path = os.path.join(species_path, assembly)
+                if not os.path.isdir(assembly_path):
                     #logging.debug("skipping non-directory %r" % assembly_path)
                     continue
 
@@ -57,7 +56,7 @@ class DorinaUtils:
         """Take a genome name and return the path to the genome directory"""
         for species, species_dir in self.genomes.items():
             if name in species_dir['assemblies']:
-                return path.join(self.datadir, 'genomes', species, name)
+                return os.path.join(self.datadir, 'genomes', species, name)
 
         # TODO: never return None!
         return None
@@ -70,8 +69,8 @@ class DorinaUtils:
         if genome_dir is None:
             return genes
 
-        genome = path.join(genome_dir, 'all.gff')
-        if not path.exists(genome):
+        genome = os.path.join(genome_dir, 'all.gff')
+        if not os.path.exists(genome):
             return genes
 
         for line in open(genome, 'r'):
