@@ -1,14 +1,61 @@
 import os
 import json
 from pybedtools import BedTool
+from dorina.utils import DorinaUtils
 
 class Regulator:
+    _datadir = None
+    _regulators = None
+
     def __init__(self, name, path, custom):
         self.name = name
         self.path = path
         self.basename = os.path.splitext(path)[0]
         self.custom = custom
         self.bed = self._bed()
+
+    @classmethod
+    def init(klass, datadir):
+        def parse_experiment(filename):
+            experiment = {}
+            with open(filename, 'r') as fh:
+                experiment = json.load(fh)
+            return experiment
+
+        def parse_func(root, regulators):
+            """Parse function used to initialise the regulators from the data directory.
+Gets all available regulators.  A valid regulator must have a JSON metadata
+file as well as a BED file containing the data.
+
+            """
+
+            for experiment in os.listdir(root):
+                experiment_path = os.path.join(root, experiment)
+                if not os.path.isfile(experiment_path):
+                    continue
+
+                experiment_root, experiment_ext = os.path.splitext(experiment)
+                if not experiment_ext.lower() == '.json':
+                    continue
+
+                bedfile = os.path.join(root, '%s.%s' % (experiment_root, 'bed'))
+                if not os.path.isfile(bedfile):
+                    continue
+
+                experiments = parse_experiment(experiment_path)
+                for experiment_dict in experiments:
+                    experiment_dict['file'] = experiment_path
+                    regulators[experiment_dict['id']] = experiment_dict
+
+            return regulators
+
+        klass._datadir = datadir
+        klass._regulators = DorinaUtils.walk_assembly_tree(os.path.join(datadir, 'regulators'),
+                                                           parse_func)
+
+    @classmethod
+    def all(klass):
+        return klass._regulators
 
     def _bed(self):
         def by_name(rec):
@@ -36,8 +83,8 @@ class Regulator:
         else:
             return regulators[0]
 
-    @staticmethod
-    def from_name(directory, name_or_path, assembly=None):
+    @classmethod
+    def from_name(klass, name_or_path, assembly=None):
         if os.sep in name_or_path:
             return Regulator("custom", name_or_path, True)
 
@@ -45,7 +92,7 @@ class Regulator:
             raise ValueError("Must provide assembly")
 
         filename = None
-        for species, species_dir in directory.items():
+        for species, species_dir in klass._regulators.items():
             for _assembly, assembly_dir in species_dir.items():
                 if assembly == _assembly and name_or_path in assembly_dir:
                     basename = os.path.splitext(assembly_dir[name_or_path]['file'])[0]
@@ -56,44 +103,10 @@ class Regulator:
 
         return Regulator(name_or_path, filename, False)
 
-    @staticmethod
-    def from_names(directory, names, assembly):
+    @classmethod
+    def from_names(klass, names, assembly):
         if names:
-            return map(lambda x: Regulator.from_name(directory, x, assembly).bed,
+            return map(lambda x: Regulator.from_name(x, assembly).bed,
                        names)
         else:
             return []
-
-    @staticmethod
-    def parse_func(root, regulators):
-        """Parse function used to initialise the regulators from the data directory.
-Gets all available regulators.  A valid regulator must have a JSON metadata
-file as well as a BED file containing the data.
-
-        """
-
-        def parse_experiment(filename):
-            experiment = {}
-            with open(filename, 'r') as fh:
-                experiment = json.load(fh)
-            return experiment
-
-        for experiment in os.listdir(root):
-            experiment_path = os.path.join(root, experiment)
-            if not os.path.isfile(experiment_path):
-                continue
-
-            experiment_root, experiment_ext = os.path.splitext(experiment)
-            if not experiment_ext.lower() == '.json':
-                continue
-
-            bedfile = os.path.join(root, '%s.%s' % (experiment_root, 'bed'))
-            if not os.path.isfile(bedfile):
-                continue
-
-            experiments = parse_experiment(experiment_path)
-            for experiment_dict in experiments:
-                experiment_dict['file'] = experiment_path
-                regulators[experiment_dict['id']] = experiment_dict
-
-        return regulators

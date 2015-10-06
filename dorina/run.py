@@ -5,12 +5,13 @@ import logging
 from os import path
 from pybedtools import BedTool
 
-from dorina import utils
+from dorina.genome    import Genome
 from dorina.regulator import Regulator
 
 class Dorina:
     def __init__(self, datadir):
-        self.utils = utils.DorinaUtils(datadir)
+        Genome.init(datadir)
+        Regulator.init(datadir)
 
     def analyse(self, genome,
                 set_a,      match_a='any', region_a='any',
@@ -41,8 +42,8 @@ class Dorina:
                 result = None
             return result
 
-        regulators_a = Regulator.from_names(self.utils.regulators, set_a, assembly=genome)
-        regulators_b = Regulator.from_names(self.utils.regulators, set_b, assembly=genome)
+        regulators_a = Regulator.from_names(set_a, assembly=genome)
+        regulators_b = Regulator.from_names(set_b, assembly=genome)
         all_regulators = Regulator.merge(regulators_a + regulators_b)
 
         result_a = compute_result(region_a, regulators_a, match_a, window_a)
@@ -67,13 +68,13 @@ class Dorina:
 
     def _add_slop(self, feature, genome_name, slop):
         """Add specified slop before and after a regulator"""
-        genome = self.utils.get_genome_by_name(genome_name)
+        genome = Genome.path_by_name(genome_name)
         chromfile = path.join(genome, "{}.genome".format(genome_name))
         return feature.slop(g=chromfile, b=slop)
 
     def _get_genome_bedtool(self, genome_name, region, genes=None):
         """get the bedtool object for a genome depending on the name and the region"""
-        genome = self.utils.get_genome_by_name(genome_name)
+        genome = Genome.path_by_name(genome_name)
         mapping = { "any":        "all",
                     "CDS":        "cds",
                     "3prime":     "3_utr",

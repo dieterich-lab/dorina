@@ -3,22 +3,14 @@
 import logging
 import os
 import json
-from dorina.genome    import Genome
-from dorina.regulator import Regulator
 
 class DorinaUtils:
-    def __init__(self, datadir):
-        self.datadir = datadir
-        self.genomes = self.walk_assembly_tree('genomes', Genome.parse_func)
-        self.regulators = self.walk_assembly_tree('regulators', Regulator.parse_func)
-
-    def walk_assembly_tree(self, root_dir, parse_func):
+    @staticmethod
+    def walk_assembly_tree(root, parse_func):
         """Walk a directory structure containg clade, species, assembly
 
         Call parse_func() for every assembly directory"""
         genomes = {}
-
-        root = os.path.join(self.datadir, root_dir)
 
         for species in os.listdir(root):
             species_path = os.path.join(root, species)
@@ -47,12 +39,3 @@ class DorinaUtils:
                 parse_func(assembly_path, assembly_dict)
 
         return genomes
-
-    def get_genome_by_name(self, name):
-        """Take a genome name and return the path to the genome directory"""
-        for species, species_dir in self.genomes.items():
-            if name in species_dir['assemblies']:
-                return os.path.join(self.datadir, 'genomes', species, name)
-
-        # TODO: never return None!
-        return None
