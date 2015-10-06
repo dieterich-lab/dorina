@@ -3,12 +3,8 @@
 import logging
 import os
 import json
-import re
-
 from dorina.genome    import Genome
 from dorina.regulator import Regulator
-
-gene_name = re.compile(r'.*ID=(.*?)($|;\w+)')
 
 class DorinaUtils:
     def __init__(self, datadir):
@@ -60,22 +56,3 @@ class DorinaUtils:
 
         # TODO: never return None!
         return None
-
-    def get_genes(self, name):
-        """Get a list of genes from genome <name>"""
-        genes = []
-
-        genome_dir = self.get_genome_by_name(name)
-        if genome_dir is None:
-            return genes
-
-        genome = os.path.join(genome_dir, 'all.gff')
-        if not os.path.exists(genome):
-            return genes
-
-        for line in open(genome, 'r'):
-            match = gene_name.match(line)
-            if match is not None:
-                genes.append(match.group(1))
-
-        return genes
