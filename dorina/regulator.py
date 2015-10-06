@@ -103,8 +103,8 @@ file as well as a BED file containing the data.
 
         return Regulator(name_or_path, filename, False)
 
-    @classmethod
-    def from_names(klass, names, assembly):
+    @staticmethod
+    def from_names(names, assembly):
         if names:
             return map(lambda x: Regulator.from_name(x, assembly).bed,
                        names)
