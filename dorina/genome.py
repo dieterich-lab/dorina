@@ -9,8 +9,10 @@ class Genome:
 
     @classmethod
     def init(klass, datadir):
-        def parse_func(root, assembly_dict):
+        def parse_func(root):
             """Parse function used to initialise all genomes from the data directory."""
+
+            assembly_dict = {}
 
             for gff_file in os.listdir(root):
                 gff_path = os.path.join(root, gff_file)

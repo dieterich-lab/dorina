@@ -22,12 +22,14 @@ class Regulator:
                 experiment = json.load(fh)
             return experiment
 
-        def parse_func(root, regulators):
+        def parse_func(root):
             """Parse function used to initialise the regulators from the data directory.
 Gets all available regulators.  A valid regulator must have a JSON metadata
 file as well as a BED file containing the data.
 
             """
+
+            regulators = {}
 
             for experiment in os.listdir(root):
                 experiment_path = os.path.join(root, experiment)
