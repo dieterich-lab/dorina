@@ -1,11 +1,15 @@
 #!/bin/bash
 
 GTF_FILE=${1}
-
+# path to this script from :
+#https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ASSEMBLY=${GTF_FILE/\.gtf/}
 
 mkdir ${ASSEMBLY}
-gtf2gff3 ${GTF_FILE} > ${ASSEMBLY}/${ASSEMBLY}.gff
+#mv ${GTF_FILE} ${ASSEMBLY}/${ASSEMBLY}.gff
+
+perl ${DIR}/gtf2gff3.pl ${GTF_FILE} > ${ASSEMBLY}/${ASSEMBLY}.gff
 
 pushd ${ASSEMBLY} > /dev/null
 grep gene ${ASSEMBLY}.gff > all.gff

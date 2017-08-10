@@ -1,4 +1,5 @@
-# vim: set fileencoding=utf-8 :
+#!/usr/bin/env python
+# -*- coding: utf-8
 
 import unittest
 from os import path
