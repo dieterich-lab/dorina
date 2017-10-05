@@ -112,7 +112,9 @@ file as well as a BED file containing the data.
     @staticmethod
     def from_names(names, assembly):
         if names:
-            return map(lambda x: Regulator.from_name(x, assembly).bed,
-                       names)
+            return list(
+                map(
+                    lambda x: Regulator.from_name(x, assembly).bed,
+                    names))
         else:
             return []
