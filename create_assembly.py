@@ -53,10 +53,10 @@ def split_features(features=None):
 
 
 assembly, extension = path.splitext(path.basename(sys.argv[1]))
-support_ext = ['gff', 'gff3']
+support_ext = ['.gff', '.gff3']
 if extension not in support_ext:
-    # TODO: this tool does not validate the file, only naively checks the file extension
-    error = 'Unsupported file extension: {}. Supported extensions are: {}'
+    # no file validation here, only naively checks the file extension
+    error = 'Unsupported file extension: {} Supported extensions are: {}'
     raise RuntimeError(error.format(extension, ", ".join(support_ext)))
 
 try:

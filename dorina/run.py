@@ -1,27 +1,29 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
-
-import os
 import logging
+import functools
 from os import path
+
 from pybedtools import BedTool
 
-from dorina.genome    import Genome
+from dorina.genome import Genome
 from dorina.regulator import Regulator
 
-class Dorina:
+
+class Dorina(object):
     def __init__(self, datadir):
         Genome.init(datadir)
         Regulator.init(datadir)
 
     def analyse(self, genome,
-                set_a,      match_a='any', region_a='any',
+                set_a, match_a='any', region_a='any',
                 set_b=None, match_b='any', region_b='any',
                 combine='or', genes=None,
                 window_a=-1,
                 window_b=-1):
         """Run doRiNA analysis"""
-        logging.debug("analyse(%r, %r(%s) <-'%s'-> %r(%s))" % (genome, set_a, match_a, combine, set_b, match_b))
+        logging.debug("analyse(%r, %r(%s) <-'%s'-> %r(%s))" % (
+            genome, set_a, match_a, combine, set_b, match_b))
 
         def compute_result(region, regulators, match, window):
             genome_bed = self._get_genome_bedtool(genome, region, genes)
@@ -37,7 +39,7 @@ class Dorina:
             if match == 'any':
                 result = genome_bed.intersect(Regulator.merge(_regulators), wa=True, u=True)
             elif match == 'all':
-                result = reduce(lambda acc, x: acc.intersect(x, wa=True, u=True),
+                result = functools.reduce(lambda acc, x: acc.intersect(x, wa=True, u=True),
                                 [genome_bed] + _regulators)
             else:
                 result = None
@@ -76,12 +78,12 @@ class Dorina:
     def _get_genome_bedtool(self, genome_name, region, genes=None):
         """get the bedtool object for a genome depending on the name and the region"""
         genome = Genome.path_by_name(genome_name)
-        mapping = { "any":        "all",
-                    "CDS":        "cds",
-                    "3prime":     "3_utr",
-                    "5prime":     "5_utr",
-                    "intron":     "intron",
-                    "intergenic": "intergenic" }
+        mapping = {"any": "all",
+                   "CDS": "cds",
+                   "3prime": "3_utr",
+                   "5prime": "5_utr",
+                   "intron": "intron",
+                   "intergenic": "intergenic"}
 
         if region not in mapping:
             raise ValueError("Invalid region: %r" % region)

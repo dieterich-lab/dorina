@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 
-import sys
 from os import path
 from argparse import Namespace
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 _config = None
 _basedir = path.dirname(path.abspath(__file__))
 _default_name = 'default.cfg'
+
 
 def load_config(namespace):
     """Load config, but don't overwrite existing settings"""
@@ -41,6 +44,7 @@ def set_config(namespace):
     """Set global configuration"""
     global _config
     _config = namespace
+
 
 def get_config():
     """Get global configuration"""

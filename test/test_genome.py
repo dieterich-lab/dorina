@@ -18,6 +18,9 @@ class TestListDataWithoutOptions(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
 
+    def TearDown(self):
+        self.maxDiff = None
+
     def test_genomes(self):
         """Test Genome.all"""
         expected = {

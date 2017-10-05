@@ -6,7 +6,8 @@ import re
 
 from dorina.utils import DorinaUtils
 
-class Genome:
+
+class Genome(object):
     _datadir = None
     _genomes = None
 
@@ -29,8 +30,9 @@ class Genome:
             return assembly_dict
 
         klass._datadir = datadir
-        klass._genomes = DorinaUtils.walk_assembly_tree(os.path.join(datadir, 'genomes'),
-                                                        parse_func)
+        klass._genomes = DorinaUtils.walk_assembly_tree(
+            os.path.join(datadir, 'genomes'),
+            parse_func)
 
     @classmethod
     def all(klass):

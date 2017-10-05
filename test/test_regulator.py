@@ -11,8 +11,12 @@ from pybedtools import BedTool
 datadir = path.join(path.dirname(path.abspath(__file__)), 'data')
 Regulator.init(datadir)
 
+
 class TestListDataWithoutOptions(unittest.TestCase):
     def setUp(self):
+        self.maxDiff = None
+
+    def TearDown(self):
         self.maxDiff = None
 
     def test_regulator_all(self):
@@ -47,12 +51,11 @@ class TestListDataWithoutOptions(unittest.TestCase):
         self.assertTrue("hg19" in got["h_sapiens"])
         self.assertEqual(expected_hg19, got["h_sapiens"]["hg19"])
 
-
     def test_regulator(self):
         """Test Regulator class methods"""
         # TODO: expect an error, not None!
-        #got = Regulator.from_name("invalid", "hg19")
-        #self.assertIsNone(got)
+        # got = Regulator.from_name("invalid", "hg19")
+        # self.assertIsNone(got)
 
         expected = path.join(datadir, 'regulators', 'h_sapiens', 'hg19', 'PARCLIP_scifi')
         got = Regulator.from_name("PARCLIP_scifi", "hg19").basename
@@ -76,7 +79,6 @@ class TestListDataWithoutOptions(unittest.TestCase):
         expected = path.join(datadir, 'regulators', 'h_sapiens', 'hg18', 'PICTAR_fake')
         got = Regulator.from_name("PICTAR_fake01", "hg18").basename
         self.assertEqual(expected, got)
-
 
     def test_make_regulator_bed(self):
         """Test regulator.bed"""
