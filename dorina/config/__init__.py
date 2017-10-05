@@ -23,7 +23,10 @@ def load_config(namespace):
 
     config = ConfigParser.ConfigParser()
     with open(default_file, 'r') as fp:
-        config.readfp(fp)
+        try:
+            config.read_file(fp)
+        except AttributeError:  # py27 support
+            config.readfp(fp)
 
     for s in config.sections():
         if not s in namespace:
