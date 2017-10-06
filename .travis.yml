@@ -4,8 +4,8 @@ sudo: false
 language: python
 python:
   - "2.7"
-  - "3.4"
-  - "3.5"
+#  - "3.4"
+#  - "3.5"
 #  - "pypy"  # PyPy2 2.5.0
 #  - "pypy3" # Pypy3 2.4.0
 
@@ -14,9 +14,11 @@ python:
 #    - stage: unit
 #      script: coverage run -m unittest discover tests/unit
 
+install:
 # Steps to Install miniconda & bedtools
 # https://conda.io/docs/user-guide/tasks/use-conda-with-travis-ci.htmlinstall:
   - sudo apt-get update
+
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
@@ -38,3 +40,6 @@ python:
 
 script:
     - nosetests
+
+notifications:
+    email: false
