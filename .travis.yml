@@ -15,11 +15,6 @@ python:
 #  - "pypy"  # PyPy2 2.5.0
 #  - "pypy3" # Pypy3 2.4.0
 
-#jobs:
-#  include:
-#    - stage: unit
-#      script: coverage run -m unittest discover tests/unit
-
 install:
 # Steps to Install miniconda & bedtools
 # https://conda.io/docs/user-guide/tasks/use-conda-with-travis-ci.htmlinstall:
@@ -45,7 +40,7 @@ install:
   - python setup.py install
 
 script:
-    - nosetests
+    - nosetests --with-coverage --cover-package=dorina test_*.py
 
 after_success:
     - coveralls
