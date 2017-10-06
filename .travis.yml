@@ -4,11 +4,14 @@ sudo: false
 language: python
 
 #cache: apt
+os:
+  - linux
+  - osx
 
 python:
   - "2.7"
-#  - "3.4"
-#  - "3.5"
+  - "3.4"
+  - "3.5"
 #  - "pypy"  # PyPy2 2.5.0
 #  - "pypy3" # Pypy3 2.4.0
 
@@ -43,6 +46,9 @@ install:
 
 script:
     - nosetests
+
+after_success:
+    - coveralls
 
 notifications:
     email: false

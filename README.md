@@ -1,6 +1,11 @@
 doRiNA
 ======
 
+[![Build Status](https://travis-ci.org/dieterich-lab/dorina.svg?branch=master)](https://travis-ci.org/dieterich-lab/dorina.svg?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/dieterich-lab/dorina/badge.svg?branch=master)](https://coveralls.io/github/dieterich-lab/dorina?branch=master)
+
+
+
 database of posttranscriptional regulatory elements
 
 About
