@@ -4,9 +4,9 @@
 from os import path
 from argparse import Namespace
 try:
-    import ConfigParser
+    import configparser
 except ImportError:
-    import configparser as ConfigParser
+    import ConfigParser as configparser
 
 _config = None
 _basedir = path.dirname(path.abspath(__file__))
@@ -21,7 +21,7 @@ def load_config(namespace):
     else:
         default_file = path.join(_basedir, _default_name)
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     with open(default_file, 'r') as fp:
         try:
             config.read_file(fp)
