@@ -34,7 +34,7 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
-  - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION -c bioconda --file requirements.txt
+  - conda create -y -n test-env python=$TRAVIS_PYTHON_VERSION -c bioconda --file requirements.txt
   - source activate test-env
   - python setup.py install
 
