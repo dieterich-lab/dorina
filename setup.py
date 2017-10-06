@@ -22,7 +22,7 @@ setup(
     keywords="bioinformatics",
     url="https://bioinf-redmine.age.mpg.de/projects/dorina-2",
     packages=['dorina', 'dorina.config'],
-    install_requires=['Cython>=0.20.1', 'pybedtools>=0.6.4'],
+    install_requires=['Cython', 'pybedtools'],
     tests_require=['nose'],
     long_description=read('README.md'),
     classifiers=[
