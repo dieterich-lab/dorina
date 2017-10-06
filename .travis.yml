@@ -10,12 +10,17 @@ os:
 python:
   - "2.7"
   - "3.5"
-  - "pypy"  # PyPy2 2.5.0
-  - "pypy3" # Pypy3 2.4.0
+  - "3.6"
+#  - "pypy"  # PyPy2 2.5.0
+#  - "pypy3" # Pypy3 2.4.0
 
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install bedtools
+   # install bedtools from source
+  - wget https://github.com/arq5x/bedtools2/releases/download/v2.25.0/bedtools-2.26.0.tar.gz
+  - tar -zxvf bedtools-2.25.0.tar.gz
+  - cd bedtools2
+  - make
+  # install other requirements
   - pip install -r requirements.txt -r test_requirements.txt
 
 install:
