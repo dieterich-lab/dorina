@@ -36,7 +36,7 @@ before_install:
   - conda info -a
   - conda create -n test-env python=$TRAVIS_PYTHON_VERSION -c bioconda --file requirements.txt
   - source activate test-env
-  - conda install --file requirements.txt -file test_requirements.txt
+  - conda install --file requirements.txt --file test_requirements.txt
 
 install:
   - python setup.py install
