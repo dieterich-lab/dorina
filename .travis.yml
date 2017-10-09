@@ -19,7 +19,7 @@ before_install:
    # TODO use always last avaible released or fixed release?
   - wget https://github.com/arq5x/bedtools2/releases/download/v2.25.0/bedtools-2.25.0.tar.gz -O bedtools.tar.gz
   - tar -zxvf bedtools.tar.gz
-  - cd bedtools
+  - cd bedtools2
   - make
   # install other requirements
   - cd ..
