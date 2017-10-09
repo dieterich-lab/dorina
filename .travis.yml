@@ -15,18 +15,28 @@ python:
 #  - "pypy3" # Pypy3 2.4.0
 
 before_install:
-   # install bedtools from source
-   # TODO use always last avaible released or fixed release?
-  - wget https://github.com/arq5x/bedtools2/releases/download/v2.25.0/bedtools-2.25.0.tar -O bedtools.tar.gz
-  - tar -zxvf bedtools.tar.gz
-  - cd bedtools2
-  - export CFLAGS="-I$PREFIX/include"
-  - export LDFLAGS="-L$PREFIX/lib"
-  - export CPATH=${PREFIX}/include
-  - make install prefix=$PREFIX
-  # install other requirements
-  - cd ..
-  - pip install -r requirements.txt -r test_requirements.txt
+
+  # Steps to Install miniconda & bedtools
+  # https://conda.io/docs/user-guide/tasks/use-conda-with-travis-ci.htmlinstall:
+  - sudo apt-get update
+
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+  - conda create -n test-env python=$TRAVIS_PYTHON_VERSION -c bioconda --file requirements.txt
+  - source activate test-env
+  - conda install -r requirements.txt -r test_requirements.txt
 
 install:
   - python setup.py install
