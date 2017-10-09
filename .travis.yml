@@ -17,8 +17,7 @@ python:
 before_install:
    # install bedtools from source
    # TODO use always last avaible released or fixed release?
-  - wget -o bedtools.tar.gz https://github.com/arq5x/bedtools2/releases/download/v2.25
-  .0/bedtools-2.25.0.tar.gz
+  - wget -o bedtools.tar.gz https://github.com/arq5x/bedtools2/releases/download/v2.25.0/bedtools-2.25.0.tar.gz
   - tar -zxvf bedtools.tar.gz
   - cd bedtools
   - make
