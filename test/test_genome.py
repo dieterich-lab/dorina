@@ -1,4 +1,5 @@
-# vim: set fileencoding=utf-8 :
+#!/usr/bin/env python
+# -*- coding: utf-8
 
 import unittest
 from os import path
@@ -10,12 +11,17 @@ from dorina import config
 from dorina.genome import Genome
 from pybedtools import BedTool
 
-datadir = path.join(path.dirname(path.abspath(__file__)), 'data')
-Genome.init(datadir)
 
 class TestListDataWithoutOptions(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
+        self.datadir = path.join(path.dirname(path.abspath(__file__)), 'data')
+        self.Genome = Genome.init(self.datadir)
+
+    def TearDown(self):
+        self.maxDiff = None
+        self.datadir = None
+        self.Genome = None
 
     def test_genomes(self):
         """Test Genome.all"""
@@ -46,7 +52,7 @@ class TestListDataWithoutOptions(unittest.TestCase):
         with self.assertRaises(ValueError):
             got = Genome.path_by_name("invalid")
 
-        expected = path.join(datadir, 'genomes', 'h_sapiens', 'hg19')
+        expected = path.join(self.datadir, 'genomes', 'h_sapiens', 'hg19')
         got = Genome.path_by_name("hg19")
         self.assertEqual(expected, got)
 

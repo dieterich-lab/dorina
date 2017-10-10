@@ -1,9 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8
+
 import os
 import json
 from pybedtools import BedTool
 from dorina.utils import DorinaUtils
 
-class Regulator:
+
+class Regulator(object):
     _datadir = None
     _regulators = None
 
@@ -15,7 +19,7 @@ class Regulator:
         self.bed = self._bed()
 
     @classmethod
-    def init(klass, datadir):
+    def init(cls, datadir):
         def parse_experiment(filename):
             experiment = {}
             with open(filename, 'r') as fh:
@@ -51,13 +55,13 @@ file as well as a BED file containing the data.
 
             return regulators
 
-        klass._datadir = datadir
-        klass._regulators = DorinaUtils.walk_assembly_tree(os.path.join(datadir, 'regulators'),
-                                                           parse_func)
+        cls._datadir = datadir
+        cls._regulators = DorinaUtils.walk_assembly_tree(os.path.join(datadir, 'regulators'),
+                                                         parse_func)
 
     @classmethod
-    def all(klass):
-        return klass._regulators
+    def all(cls):
+        return cls._regulators
 
     def _bed(self):
         def by_name(rec):
@@ -86,7 +90,7 @@ file as well as a BED file containing the data.
             return regulators[0]
 
     @classmethod
-    def from_name(klass, name_or_path, assembly=None):
+    def from_name(cls, name_or_path, assembly=None):
         if os.sep in name_or_path:
             return Regulator("custom", name_or_path, True)
 
@@ -94,7 +98,7 @@ file as well as a BED file containing the data.
             raise ValueError("Must provide assembly")
 
         filename = None
-        for species, species_dir in klass._regulators.items():
+        for species, species_dir in cls._regulators.items():
             for _assembly, assembly_dir in species_dir.items():
                 if assembly == _assembly and name_or_path in assembly_dir:
                     basename = os.path.splitext(assembly_dir[name_or_path]['file'])[0]
@@ -108,7 +112,9 @@ file as well as a BED file containing the data.
     @staticmethod
     def from_names(names, assembly):
         if names:
-            return map(lambda x: Regulator.from_name(x, assembly).bed,
-                       names)
+            return list(
+                map(
+                    lambda x: Regulator.from_name(x, assembly).bed,
+                    names))
         else:
             return []

@@ -1,14 +1,21 @@
 #!/usr/bin/env python
-# vim: set fileencoding=utf-8 :
+# -*- coding: utf-8
 
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
 import sys
 import logging
 import argparse
 
 from dorina import run
-from dorina.genome    import Genome
+from dorina.genome import Genome
 from dorina.regulator import Regulator
 from dorina.config import load_config, set_config
+
+logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.WARNING)
+log = logging.getLogger(__name__)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Run doRiNA from the command line")
@@ -60,7 +67,7 @@ def main():
                         help="print a list of available regulators and exit")
 
     options = parser.parse_args()
-
+    log.debug("Successfully parsed the command line arguments")
     setup_logging(options)
 
     load_config(options)
@@ -81,18 +88,17 @@ def main():
     if not 'set_a' in options or options.set_a is None:
         parser.error("You need to select regulators for set A")
 
-
     genome = Genome.path_by_name(options.genome)
     if genome is None:
-        print "Selected genome %r not found." % options.genome
+        log.error("Selected genome %r not found.", options.genome)
         list_genomes(dorina)
         sys.exit(1)
 
     try:
         set_a = map(lambda x: Regulator.from_name(x, assembly=options.genome).basename,
-                    options.set_a)
-    except ValueError, e:
-        print e.message
+                    options.set_a) # TODO what this line is achieving ?
+    except ValueError as e:
+        log.error(e)
         list_regulators(dorina)
         sys.exit(1)
 
@@ -100,49 +106,45 @@ def main():
                             options.region_a, options.set_b, options.match_b,
                             options.region_b, options.combine, options.genes,
                             options.window_a, options.window_b)
-    print result,
+    print(result)
     sys.exit(0)
 
 
 def setup_logging(options):
     """Set up the logging output"""
     if options.debug:
-        log_level = logging.DEBUG
+        log.setLevel(logging.DEBUG)
     elif options.verbose:
-        log_level = logging.INFO
-    else:
-        log_level = logging.WARNING
-
-    logging.basicConfig(format="%(levelname)s: %(message)s",
-                        level=log_level)
+        log.setLevel(logging.INFO)
 
 
 def list_genomes(dorina):
     """List all available genomes"""
     genomes = Genome.all()
-    print "Available genomes:"
-    print "------------------"
+    print("Available genomes:")
+    print("------------------")
     for species, species_dict in genomes.items():
-        print "\t%s" % species
+        print("\t%s" % species)
         for assembly, assembly_dict in species_dict['assemblies'].items():
-            print "\t\t%s" % assembly
+            print ("\t\t%s" % assembly)
             gffs = assembly_dict.items()
             gffs.sort(key=lambda x: x[0])
             for gff in gffs:
-                print "\t\t\t%s: %s" % gff
+                print ("\t\t\t%s: %s" % gff)
 
 
 def list_regulators(dorina):
     """List all available regulators"""
     regulators = Regulator.all()
-    print "Available regulators:"
-    print "---------------------"
+    print ("Available regulators:")
+    print ("---------------------")
     for species, species_dict in regulators.items():
-        print "\t%s" % species
+        print ("\t%s" % species)
         for assembly, assembly_dict in species_dict.items():
-            print "\t\t%s" % assembly
+            print("\t\t%s" % assembly)
             for regulator, regulator_dict in assembly_dict.items():
-                print "\t\t\t%s" % regulator
+                print ("\t\t\t%s" % regulator)
+
 
 if __name__ == "__main__":
     main()
