@@ -37,8 +37,8 @@ class EnsemblFTP(object):
     Base template for retrieving file and information from Ensembl FTP server.
     """
 
-    def __init__(self, version = config['DEFAULT'].get('version'),
-                 organism = config['DEFAULT'].get('organism'), *args, **kwargs):
+    def __init__(self, version=config['DEFAULT'].get('version'),
+                 organism=config['DEFAULT'].get('organism'), *args, **kwargs):
         self.base_url = 'ftp.ensemblorg.ebi.ac.uk'
         self.url = []
         self.local_data = config['DEFAULT'].get('data_path')
@@ -254,8 +254,6 @@ class EnsemblRegulation(EnsemblFTP):
         [self.url.extend(x) for x in self.available.values()]
         self.check_extension(extension)
         self.fetch_all()
-
-
 
 
 class EnsemblRest(object):
