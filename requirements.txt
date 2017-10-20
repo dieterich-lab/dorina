@@ -1,2 +1,4 @@
+requests
+click
 Cython
 pybedtools
