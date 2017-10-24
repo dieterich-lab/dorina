@@ -48,21 +48,22 @@ def call_command(command, stdout=None, cwd=None, mode='w', stdin=None):
 def cli():
     """
     This is the command line interface for the doRiNA, a
-    database of posttranscriptional regulatory elements.
+    database of posttranscriptional regulatory elements
     """
     pass
 
 
 def common_params(func):
     @click.option('-r', '--release', type=str,
-                  default=config['DEFAULT'].get('version'),
+                  default=config.get('DEFAULT', 'version'),
                   help='Ensembl release version', show_default=True)
     @click.option('-o', '--organism',
-                  type=str, default=config['DEFAULT'].get('organism'),
-                  help='Organism name', show_default=True)
-    # @click.option('--variants', is_flag=True, help='Retrieves variants')
-    # @click.option('--dif_expression')
-    # @click.option('--regulatory')
+                  type=str, default=config.get('DEFAULT', 'organism'),
+                  help='Organism formal name', show_default=True)
+    @click.option('--variation', is_flag=True,
+                  help='Retrieves data set from Ensembl variation')
+    @click.option('--regulation', is_flag=True,
+                  help='Retrieves data set from Ensembl regulation')
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -72,16 +73,19 @@ def common_params(func):
 
 @click.command()
 @common_params
-def create_assembly(release, organism):
+def create_assembly(release, organism, variation, regulation):
     """Retrieves the data files for a given Ensembl release version and
     organism """
-    #  TODO better error if called with mouse / rat or support
     log.info('Retrieving gff files for {} {}'.format(release, organism))
     ftp = EnsemblFTP(organism=organism, version=release)
-    assembly = ftp.assembly
-    base_path = config['DEFAULT'].get('data_path')
+    try:
+        assembly = ftp.assembly
+    except (IndexError, ):
+        raise ValueError('No assembly found for {}.'.format(
+            organism))
+    base_path = config.get('DEFAULT', 'data_path')
 
-    gff = ftp.retrieve_from_gff_by_index()[0]
+    gff = ftp.retrieve_full_gff()[0]
 
     cl = r'$1 == "##sequence-region"{print $2 "\t" $4 - $3 + 1} !/^ *#/{exit;}'
     log.debug('Creating {}.genome file'.format(assembly))
@@ -116,7 +120,6 @@ def create_assembly(release, organism):
         stdin=bedtools_sub.stdout,
         cwd=os.path.join(base_path, assembly))
 
-
     call_command(
         "bedtools sort -i all.gff3".split(),
         stdout="all_sorted.gff3",
@@ -125,11 +128,19 @@ def create_assembly(release, organism):
 
     log.debug('Creating intergenic.bed file')
     call_command(
-        "bedtools complement -i all_sorted.gff3 -g {}.genome".format(assembly).split(),
+        "bedtools complement -i all_sorted.gff3 -g {}.genome".format(
+            assembly).split(),
         stdout="intergenic.bed",
         cwd=os.path.join(base_path, assembly))
 
     os.remove(os.path.join(base_path, assembly, 'exon.gff3'))
+
+    if variation:
+        ftp.retrieve_full_vcf()
+
+    if regulation:
+        ftp.retrieve_from_regulation_by_experiment()
+
     sys.exit(0)
 
 
@@ -139,9 +150,9 @@ def clear_assembly(assembly):
     """Clear data files for a given Ensembl release version and organism """
     click.confirm(
         'Do you want to remove data file for the {} assembly?'.format(assembly),
-                  abort=True)
+        abort=True)
 
-    base_path = config['DEFAULT'].get('data_path')
+    base_path = config.get('DEFAULT', 'data_path')
     shutil.rmtree(os.path.join(base_path, assembly))
 
 

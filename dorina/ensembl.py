@@ -7,7 +7,7 @@ Created on 09:32 10/10/2017 2017
 import os
 from os import path
 import logging
-from ftplib import FTP
+from ftplib import FTP, all_errors
 
 import requests
 from six.moves.urllib.request import urlretrieve
@@ -21,13 +21,17 @@ log = logging.getLogger('dorina.config')
 class EnsemblFTP(object):
     """
     Base template for retrieving file and information from Ensembl FTP server.
+
+    .. important:: Despite some of the function document on directory
+    hierarchy there is no warranty that the structure will work for all
+    organisms. In fact, it won't.
     """
 
-    def __init__(self, version=config['DEFAULT'].get('version'),
-                 organism=config['DEFAULT'].get('organism'), *args, **kwargs):
+    def __init__(self, version=config.get('DEFAULT', 'version'),
+                 organism=config.get('DEFAULT', 'organism'), *args, **kwargs):
         self.base_url = 'ftp.ensemblorg.ebi.ac.uk'
         self.url = []
-        self.local_data = config['DEFAULT'].get('data_path')
+        self.local_data = config.get('DEFAULT', 'data_path')
         self.version = version
         self.organism = organism
         self.available = {}
@@ -50,10 +54,17 @@ class EnsemblFTP(object):
         """
         if not url.startswith('/'):
             url = '/' + url
-
-        with FTP(self.base_url) as ftp:
+        available_dir = None
+        ftp = FTP(self.base_url)
+        try:
             ftp.login()
             available_dir = ftp.nlst(url)
+        except all_errors as e:
+            log.error('FTP error.')
+            raise e
+        finally:
+            ftp.close()
+
         if not available_dir:
             log.warning('No available files in {}'.format(url))
 
@@ -94,7 +105,12 @@ class EnsemblFTP(object):
 
     def retrieve_all(self):
         for url in reversed(self.url):
-            retrieved = self.retrieve_file_from_url(url)
+            try:
+                retrieved = self.retrieve_file_from_url(url)
+            except (IOError, ) as e:
+                self.url = []
+                raise(e)
+
             filename = self.filename_from_url(url)
             if retrieved:
                 uncompress(filename)
@@ -170,12 +186,26 @@ class EnsemblFTP(object):
         url = u'/pub/{}/{}/{}/'.format(self.version, extension, self.organism)
         self.check_available(url)
         self.url.append(self.available[url][file_index])
-        self.assembly = self.get_assembly(self.version, self.organism)
         self.check_extension(extension)
 
         return list(self.retrieve_all())
 
-    def retrieve_from_vcf(self, extension='gff3'):
+    def retrieve_full_gff(self):
+        """
+        Retrieves the GFF3 file that contains all chromossomes from Ensembl FTP
+        server.
+        .. note::
+        /pub/release-90/gff3/homo_sapiens/Homo_sapiens.GRCh38.90.gff3.gz
+        """
+
+        url = u'/pub/{}/gff3/{}/{}.{}.{}.gff3.gz'.format(
+            self.version, self.organism, self.organism.capitalize(),
+            self.assembly, self.version[-2:])
+        self.check_available(url)
+        self.url.append(url)
+        return list(self.retrieve_all())
+
+    def retrieve_full_vcf(self, extension='vcf.gz'):
         """
         Retrieves Regulation VCS files from Ensembl Variation FTP server.
         The regulation directory structure is:
@@ -190,6 +220,7 @@ class EnsemblFTP(object):
         Only available for human and mice.
         .. todo: better document each data type.
         """
+        # /pub/release-90/variation/vcf/homo_sapiens/Homo_sapiens.vcf.gz
         self.url.append(u'/pub/{}/variation/vcf/{}/{}.{}'.format(
             self.version, self.organism, self.organism.capitalize(), extension))
         self.check_extension(extension)
@@ -213,7 +244,7 @@ class EnsemblFTP(object):
         .. TODO: Document each data type.
         """
         if tissue is None:
-            tissue = config['DEFAULT'].get('tissue')
+            tissue = config.get('DEFAULT', 'tissue')
         url = u'/pub/{}/regulation/{}/Peaks/{}/{}'.format(self.version,
                                                           self.organism,
                                                           tissue,
@@ -222,6 +253,7 @@ class EnsemblFTP(object):
 
         if '*' in url:
             url = url.replace('*', '')
+
         self.check_available(url)
         for _url in self.available[url]:
             self.check_available(_url)
