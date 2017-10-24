@@ -7,6 +7,8 @@ import json
 import shutil
 from os import path
 
+log = logging.getLogger('dorina.config')
+
 
 class DorinaUtils:
     @staticmethod
@@ -66,32 +68,35 @@ def check_file_extension(filename, extension):
     # return extension in filename.replace(ignore, '').rsplit('.', 1)[-1]
 
 
-def expand_local_path(local_path):
+def expand_path(path_):
     """
     Check whether path is writable
 
-    :param str local_path:
+    :param str path_:
     :return str:
     """
-    if '~' in local_path:
-        local_path = path.expanduser(local_path)
+    if '~' in path_:
+        path_ = path.expanduser(path_)
 
-    if not os.access(local_path, os.W_OK):
-        raise OSError('User does not have writing permissions in {}'.format(local_path))
-    return local_path
+    if not os.access(path_, os.W_OK):
+        raise OSError('User does not have writing permissions in {}'.format(path_))
+    return path_
 
 
-def uncompress(file_path):
+def uncompress(filename):
     """
 
-    :param str file_path:
+    :param str filename:
     :return:
     """
-    extension = file_path.rsplit('.', 1)[-1]
+    extension = filename.rsplit('.', 1)[-1]
+    uncompressed_filename = filename.replace('.' + extension, '')
     if extension not in ('gz',):
-        raise NotImplementedError("Extension {} is unsupported".format(extension))
+        raise NotImplementedError("Extension {} is unsupported.".format(extension))
 
-    with gzip.open(file_path) as _input, \
-            open(file_path.replace('.' + extension, ''), 'wb') as output:
+    with gzip.open(filename) as _input, \
+            open(uncompressed_filename, 'wb') as output:
         shutil.copyfileobj(_input, output)
-        shutil.os.remove(file_path)
+        shutil.os.remove(filename)
+
+    return uncompressed_filename

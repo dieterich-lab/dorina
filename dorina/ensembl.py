@@ -4,32 +4,18 @@
 Created on 09:32 10/10/2017 2017
 
 """
-import logging
-from ftplib import FTP
 import os
 from os import path
+import logging
+from ftplib import FTP
 
 import requests
-
-try:
-    from urllib.request import urlretrieve
-except ImportError:
-    from urllib import urlretrieve  # py27
+from six.moves.urllib.request import urlretrieve
 
 from dorina.utils import check_file_extension, uncompress
 from dorina.config import config
 
 log = logging.getLogger('dorina.config')
-
-
-# def unzip_and_write_file(data, data_path, mode='wb'):
-#     if data_path.endswith('.gz'):
-#         with open(data_path.replace('.gz', ''), mode) as f:
-#             f.write(fileobj=data)
-#     else:
-#         raise NotImplementedError('{} extension is not supported.'.format(
-#             data_path.rsplit('.', 1)[-1]
-#         ))
 
 
 class EnsemblFTP(object):
@@ -42,13 +28,21 @@ class EnsemblFTP(object):
         self.base_url = 'ftp.ensemblorg.ebi.ac.uk'
         self.url = []
         self.local_data = config['DEFAULT'].get('data_path')
-        self.available = {}
         self.version = version
         self.organism = organism
-        self.assembly = None
-        self.file_name = None
+        self.available = {}
+        self._file_name = None
 
-    def check_available(self, url=None):
+        self.assembly = self.get_assembly(
+            version=version, organism=self.organism)
+        try:
+            os.makedirs(path.join(self.local_data + self.assembly))
+        except OSError:
+            log.info('{} exists, aborting makedir.'.format(
+                path.join(self.local_data + self.assembly)))
+            pass  # dir exists
+
+    def check_available(self, url):
         """
         List the files and directories available at the FTP server.
 
@@ -59,53 +53,53 @@ class EnsemblFTP(object):
 
         with FTP(self.base_url) as ftp:
             ftp.login()
-            # TODO throw error in URL unavailable
             available_dir = ftp.nlst(url)
+        if not available_dir:
+            log.warning('No available files in {}'.format(url))
 
         self.available[url] = available_dir
 
-    def check_local(self, file_name):
+    def check_local(self, basename):
+        """Check if file has been downloaded before."""
+        if '/' in basename:
+            raise NameError('This {} seems a filename, not a basename.'.format(
+                basename))
 
-        return path.isfile(path.join(self.local_data, self.assembly, file_name))
+        return path.isfile(path.join(self.local_data, self.assembly, basename))
 
-    # def ftp_fetch(self, remote_file):
-    #     remote_path, file_name = remote_file.rsplit('/', 1)
-    #
-    #     with FTP(self.base_url) as ftp:
-    #         ftp.login()
-    #         ftp.cwd(remote_path)
-    #
-    #         def callback(data):
-    #             return unzip_and_write_file(data, self.local_data + file_name)
-    #
-    #         ftp.retrbinary("RETR {}".format(file_name), callback)
+    def filename_from_url(self, url):
+        remote_path, filename = url.rsplit('/', 1)
+        return path.join(self.local_data, self.assembly, filename)
 
-    def retrieve_file_from_url(self, url):
+    def retrieve_file_from_url(self, url, force=False):
         """
         Retrieve a file from FTP server.
-        .. note:: urlretrieve has a better API for error handling than ftp.retrbinary
+        .. note:: urlretrieve has a better API for error handling than
+        ftp.retrbinary
 
+        :param bool force: overwrite local files
         :param str url: file url
+        :return bool: whether retrieved
         """
+        remote_path, basename = url.rsplit('/', 1)
 
-        remote_path, file_name = url.rsplit('/', 1)
-        # if self.check_local(file_name):
-        #     pass  # TODO
-        if self.assembly is None:
-            self.assembly = self.get_assembly()
+        filename = path.join(self.local_data, self.assembly, basename)
+        if not force and self.check_local(basename.replace('.gz', '')):
+            log.info('{} available, aborting retrieval.'.format(filename))
+            return False
+        else:
+            urlretrieve('ftp://' + self.base_url + url, filename)
+            log.info('{} retrieval complete.'.format(filename))
+            return True
 
-        local_path = path.join(self.local_data, self.assembly, file_name)
-        try:
-            os.makedirs(path.join(self.local_data + self.assembly))
-        except OSError as e:
-            pass  # dir exists
-        urlretrieve('ftp://' + self.base_url + url, local_path)
-        uncompress(local_path)
-        # TODO RETURN PATH
-
-    def fetch_all(self):
-        for file in self.url:
-            self.retrieve_file_from_url(file)
+    def retrieve_all(self):
+        for url in reversed(self.url):
+            retrieved = self.retrieve_file_from_url(url)
+            filename = self.filename_from_url(url)
+            if retrieved:
+                uncompress(filename)
+            self.url.remove(url)
+            yield filename
 
     def check_extension(self, extension):
         """
@@ -121,9 +115,9 @@ class EnsemblFTP(object):
         """
         This is a hack to get the Assembly for a Ensembl release and organism.
         For currently release, just use the REST .
-        :param version:
-        :param organism:
-        :return:
+        :param str version: release version
+        :param str organism: organism name
+        :return str: assembly name
         """
         if version is None:
             version = self.version
@@ -131,8 +125,9 @@ class EnsemblFTP(object):
             organism = self.organism
         url = u'/pub/{}/gff3/{}/'.format(version, organism)
         self.check_available(url)
-        self.url.append(self.available[url][-2])
-        return self.url[0].split('.')[1]
+        assembly = self.available[url][-2].split('.')[1]
+        self.available = {}
+        return assembly
 
     def retrieve_from_tsv_by_index(self, extension='tsv.gz', file_index=5):
         """
@@ -156,93 +151,73 @@ class EnsemblFTP(object):
         self.check_available(url)
         self.url.append(self.available[url][file_index])
         self.check_extension(extension)
-        # self.fetch_all()
 
+        return list(self.retrieve_all())
 
-class EnsemblGFF(EnsemblFTP):
-    """
-    Retrieves GFF3 files from Ensembl FTP server.
-    For the gff3 directory structure is:
-    - CHECKSUMS
-    - abinitio file
-    - chromosome file
-    - a file for each chromosome
-    - a complete file with every chromosome
-    - README
+    def retrieve_from_gff_by_index(self, extension='gff3', file_index=-2):
+        """
+        Retrieves GFF3 files from Ensembl FTP server.
+        For the gff3 directory structure is:
+        - CHECKSUMS
+        - abinitio file
+        - chromosome file
+        - a file for each chromosome
+        - a complete file with every chromosome
+        - README
 
-    Default is the GFF3 file with all chromosomes
-    """
-
-    def __init__(self,
-                 version=config['DEFAULT'].get('version'),
-                 organism=config['DEFAULT'].get('organism'),
-                 file_index=-2, *args, **kwargs):
-        EnsemblFTP.__init__(self, *args, **kwargs)
-        extension = 'gff3'
-
-        url = u'/pub/{}/{}/{}/'.format(version, extension, organism)
+        Default is the GFF3 file with all chromosomes
+        """
+        url = u'/pub/{}/{}/{}/'.format(self.version, extension, self.organism)
         self.check_available(url)
         self.url.append(self.available[url][file_index])
-        self.assembly = self.get_assembly(version, organism)
+        self.assembly = self.get_assembly(self.version, self.organism)
         self.check_extension(extension)
-        self.fetch_all()
 
+        return list(self.retrieve_all())
 
-class EnsemblVariation(EnsemblFTP):
-    """
-    Retrieves Regulation VCS files from Ensembl Variation FTP server.
-    The regulation directory structure is:
-    -  CHECKSUM
-    -  Peaks
-    -  QualityCheck
-    -  RegulatoryFeatureActivity
-    -  Regulatory features
-    -  Motif features
+    def retrieve_from_vcf(self, extension='gff3'):
+        """
+        Retrieves Regulation VCS files from Ensembl Variation FTP server.
+        The regulation directory structure is:
+        -  CHECKSUM
+        -  Peaks
+        -  QualityCheck
+        -  RegulatoryFeatureActivity
+        -  Regulatory features
+        -  Motif features
 
-    .. note:
-    Only available for human and mice.
-    .. todo: better document each data type.
-    """
-
-    def __init__(self, version=config['DEFAULT'].get('version'),
-                 organism=config['DEFAULT'].get('organism'), extension='vcf.gz',
-                 *args, **kwargs):
-        EnsemblFTP.__init__(self, *args, **kwargs)
-
+        .. note:
+        Only available for human and mice.
+        .. todo: better document each data type.
+        """
         self.url.append(u'/pub/{}/variation/vcf/{}/{}.{}'.format(
-            version, organism, organism.capitalize(), extension))
-        # TODO others type of variation files
+            self.version, self.organism, self.organism.capitalize(), extension))
         self.check_extension(extension)
-        self.fetch_all()
 
+        return list(self.retrieve_all())
 
-class EnsemblRegulation(EnsemblFTP):
-    """
-    Retrieves Regulation bed files from Ensembl FTP server.
-    The regulation directory structure is:
-    -  CHECKSUM
-    -  Peaks
-    -  QualityCheck
-    -  RegulatoryFeatureActivity
-    -  Regulatory features
-    -  Motif features
+    def retrieve_from_regulation_by_experiment(self, extension='bed',
+                                               tissue=None, experiment='*'):
+        """
+        Retrieves Regulation bed files from Ensembl FTP server by experiment name
+        The regulation directory structure is:
+        -  CHECKSUM
+        -  Peaks
+        -  QualityCheck
+        -  RegulatoryFeatureActivity
+        -  Regulatory features
+        -  Motif features
 
-    .. note:
-    Only available for human and mice.
-    .. TODO: Document each data type.
-    """
-
-    def __init__(self, version=config['DEFAULT'].get('version'),
-                 organism=config['DEFAULT'].get('organism'),
-                 tissue=config['DEFAULT'].get('tissue'), extension='bed', experiment='*',
-                 *args, **kwargs):
-        EnsemblFTP.__init__(self, *args, **kwargs)
-
-        url = u'/pub/{}/regulation/{}/Peaks/{}/{}'.format(
-            version,
-            organism,
-            tissue,
-            experiment)
+        .. note:
+        Only available for human and mice.
+        .. TODO: Document each data type.
+        """
+        if tissue is None:
+            tissue = config['DEFAULT'].get('tissue')
+        url = u'/pub/{}/regulation/{}/Peaks/{}/{}'.format(self.version,
+                                                          self.organism,
+                                                          tissue,
+                                                          experiment)
         # TODO should we support other type of experiments ?
 
         if '*' in url:
@@ -253,7 +228,8 @@ class EnsemblRegulation(EnsemblFTP):
         del self.available[url]
         [self.url.extend(x) for x in self.available.values()]
         self.check_extension(extension)
-        self.fetch_all()
+
+        return list(self.retrieve_all())
 
 
 class EnsemblRest(object):
@@ -267,7 +243,8 @@ class EnsemblRest(object):
 
     def __init__(self, *args, **kwargs):
         self.base_url = kwargs.get('base_url', 'http://rest.ensembl.org/')
-        self.headers = kwargs.get('headers', {'content-type': 'application/json'})
+        self.headers = kwargs.get('headers',
+                                  {'content-type': 'application/json'})
         self.reqs_per_sec = 15
         self.session = requests.Session()
 
@@ -294,13 +271,14 @@ class EnsemblRest(object):
         ENSP00000288602.6, but not for transcripts, as ENST00000288602.10
 
         """
-        # params = {'aligned': 0, 'callback': '-', 'cigar_line': 0, 'clusterset_id': '-',
-        #          'db_type': '-', 'nh_format': 'simple', 'object_type': [], 'prune_species': '-',
-        #          'prune_taxon': '-', 'sequence': 'protein', 'species': '-'}
+        # params = {'aligned': 0, 'callback': '-', 'cigar_line': 0,
+        # 'clusterset_id': '-', 'db_type': '-', 'nh_format': 'simple',
+        # 'object_type': [], 'prune_species': '-', 'prune_taxon': '-',
+        # 'sequence': 'protein', 'species': '-'}
         if '.' in ensembl_id:
             ensembl_id = ensembl_id.split('.')[0]
-            log.info(
-                'Isoform identifier detected, falling back to stable ID {}'.format(ensembl_id))
+            log.info('Isoform identifier detected, falling back to stable ID '
+                     '{}'.format(ensembl_id))
         ext = 'genetree/member/id/{}?'.format(ensembl_id)
         return self.get(ext, params=params)
 
