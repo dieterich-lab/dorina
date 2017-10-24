@@ -75,14 +75,16 @@ def common_params(func):
 def create_assembly(release, organism):
     """Retrieves the data files for a given Ensembl release version and
     organism """
-
+    #  TODO better error if called with mouse / rat or support
     log.info('Retrieving gff files for {} {}'.format(release, organism))
     ftp = EnsemblFTP(organism=organism, version=release)
     assembly = ftp.assembly
     base_path = config['DEFAULT'].get('data_path')
+
     gff = ftp.retrieve_from_gff_by_index()[0]
 
     cl = r'$1 == "##sequence-region"{print $2 "\t" $4 - $3 + 1} !/^ *#/{exit;}'
+    log.debug('Creating {}.genome file'.format(assembly))
     call_command(
         ['awk', cl, gff.replace('.gz', '')],
         "{}.genome".format(assembly),
@@ -97,23 +99,37 @@ def create_assembly(release, organism):
                "five_prime": "5_utr"}
 
     for k, v in mapping.items():
+        log.debug('Creating {}.gff3 file'.format(v))
         call_command(
-            "grep {} {}".format(k, gff.replace('.gz', '')).split(), v + ".gff3",
+            "grep {} {}".format(k, gff.replace('.gz', '')).split(),
+            stdout=v + ".gff3",
             cwd=os.path.join(base_path, assembly))
 
+    log.debug('Creating intron.gff3 file')
     bedtools_sub = call_command(
         'bedtools subtract -s -a all.gff3 -b exon.gff3'.split(),
         stdout=PIPE,
         cwd=os.path.join(base_path, assembly))
     call_command(
-        'sed -e "s/\tgene\t/\tintron\t/"'.split(),
-        "intron.gff3",
+        r"sed -e s/\tgene\t/\tintron\t/".split(' '),  # don't split on \t
+        stdout="intron.gff3",
         stdin=bedtools_sub.stdout,
         cwd=os.path.join(base_path, assembly))
 
+
     call_command(
-        "bedtools complement -i all.gff3 -g {}.genome".format(assembly).split(),
-        "intergenic.bed", cwd=os.path.join(base_path, assembly))
+        "bedtools sort -i all.gff3".split(),
+        stdout="all_sorted.gff3",
+        cwd=os.path.join(base_path, assembly))
+    os.remove(os.path.join(base_path, assembly, 'all.gff3'))
+
+    log.debug('Creating intergenic.bed file')
+    call_command(
+        "bedtools complement -i all_sorted.gff3 -g {}.genome".format(assembly).split(),
+        stdout="intergenic.bed",
+        cwd=os.path.join(base_path, assembly))
+
+    os.remove(os.path.join(base_path, assembly, 'exon.gff3'))
     sys.exit(0)
 
 
