@@ -96,7 +96,7 @@ def main():
 
     try:
         set_a = map(lambda x: Regulator.from_name(x, assembly=options.genome).basename,
-                    options.set_a) # TODO what this line is achieving ?
+                    options.set_a)  # TODO what this line is achieving ?
     except ValueError as e:
         log.error(e)
         list_regulators(dorina)

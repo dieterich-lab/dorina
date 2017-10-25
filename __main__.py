@@ -8,15 +8,16 @@ import functools
 import logging
 import os
 from subprocess import check_call, Popen, PIPE
-
-import click
+import shutil
 import sys
 
-import shutil
+import click
 
-from dorina import __version__
+from dorina import __version__, run
 from dorina.config import config
 from dorina.ensembl import EnsemblFTP
+from dorina.genome import Genome
+from dorina.regulator import Regulator
 
 log = logging.getLogger('dorina.config')
 
@@ -80,7 +81,7 @@ def create_assembly(release, organism, variation, regulation):
     ftp = EnsemblFTP(organism=organism, version=release)
     try:
         assembly = ftp.assembly
-    except (IndexError, ):
+    except (IndexError,):
         raise ValueError('No assembly found for {}.'.format(
             organism))
     base_path = config.get('DEFAULT', 'data_path')
@@ -156,7 +157,104 @@ def clear_assembly(assembly):
     shutil.rmtree(os.path.join(base_path, assembly))
 
 
+@click.command()
+@click.argument('genome')
+@click.option('-d', '--debug', is_flag=True,
+              help="Set logging level to debug (more verbose)")
+@click.option('-q', '--quiet', is_flag=True,
+              help="Set logging level to error (quieter)")
+@click.option('-a', '--set-a', multiple=True,
+              help="First set of regulators to analyse")
+@click.option('-b', '--set-b', multiple=True,
+              help="Second set of regulators to analyse")
+@click.option('--genes', multiple=True, type=list, default=['all'])
+@click.option('--match-a', type=click.Choice(['any', 'all']), default='any',
+              help="All or any regulators in set A must match")
+@click.option('--region-a', default='any', type=click.Choice(
+    ['any', 'CDS', '3prime', '5prime', 'intron', 'intergenic']),
+              help="Region to match set A in")
+@click.option('--match-b', type=click.Choice(['any', 'all']), default='any',
+              help="All or any regulators in set B must match")
+@click.option('--region-b', default='any', type=click.Choice(
+    ['any', 'CDS', '3prime', '5prime', 'intron', 'intergenic']),
+              help="Region to match set B in")
+@click.option('-C', '--combine', default='or',
+              type=click.Choice(['and', 'or', 'not', 'xor']),
+              help="Set operation to combine set A and set B hits")
+@click.option('--window-a', type=int, default=-1,
+              help="Use windowed search for set A")
+@click.option('--window-b', type=int, default=-1,
+              help="Use windowed search for set B")
+@click.option('--configfile',
+              help="Load configuration from an alternative file")
+def run_dorina(genome, debug, quiet, set_a, set_b, genes, match_a, match_b,
+               region_a, region_b, combine, window_a, window_b, configfile):
+    """"Run doRiNA from the command line"""
+    if debug:
+        log.setLevel(logging.DEBUG)
+    elif quiet:
+        log.setLevel(logging.ERROR)
+
+    if configfile:
+        config.read_file(configfile)
+    dorina = run.Dorina(config.get('data_path'))
+
+    genome = Genome.path_by_name(genome)
+    if genome is None:
+        log.error("Selected genome %r not found.", genome)
+        list_genomes()
+        sys.exit(1)
+
+    try:
+        set_a = map(lambda x: Regulator.from_name(x, assembly=genome).basename,
+                    set_a)
+    except ValueError as e:
+        log.error(e)
+        list_regulators()
+        sys.exit(1)
+
+    result = dorina.analyse(genome, set_a, match_a, region_a, set_b, match_b,
+                            region_b, combine, genes, window_a, window_b)
+    print(result)
+    sys.exit(0)
+
+
+@click.command()
+def list_genomes():
+    """List all available genomes"""
+    genomes = Genome.all()
+    print("Available genomes:")
+    print("------------------")
+    for species, species_dict in genomes.items():
+        print("\t%s" % species)
+        for assembly, assembly_dict in species_dict['assemblies'].items():
+            print("\t\t%s" % assembly)
+            gffs = assembly_dict.items()
+            gffs.sort(key=lambda x: x[0])
+            for gff in gffs:
+                print("\t\t\t%s: %s" % gff)
+    sys.exit(0)
+
+
+@click.command()
+def list_regulators():
+    """List all available regulators"""
+    regulators = Regulator.all()
+    print("Available regulators:")
+    print("---------------------")
+    for species, species_dict in regulators.items():
+        print("\t%s" % species)
+        for assembly, assembly_dict in species_dict.items():
+            print("\t\t%s" % assembly)
+            for regulator, regulator_dict in assembly_dict.items():
+                print("\t\t\t%s" % regulator)
+    sys.exit(0)
+
+
 cli.add_command(create_assembly)
 cli.add_command(clear_assembly)
+cli.add_command(list_regulators)
+cli.add_command(list_genomes)
+cli.add_command(run_dorina)
 if __name__ == '__main__':
     cli()

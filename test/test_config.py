@@ -19,15 +19,15 @@ class TestConfig(unittest.TestCase):
         config._default_name = self.original_default_name
 
     def test_load_config(self):
-        "Test config.load_config()"
+        """Test config.load_config()"""
         config._basedir = path.dirname(__file__)
         config._default_name = 'test.cfg'
         c = Namespace(testing=True)
 
     def test_set_config(self):
-        "Test config.set_config()"
+        """Test config.set_config()"""
         c = Namespace(testing=True)
 
     def test_get_config(self):
-        "Test config.get_config()"
+        """Test config.get_config()"""
         config._config = Namespace(testing=True)
