@@ -10,7 +10,8 @@ import logging
 from ftplib import FTP, all_errors
 
 import requests
-from six.moves.urllib.request import urlretrieve
+from six.moves.urllib.request import urlretrieve, urlopen
+from six.moves.urllib.error import URLError
 
 from dorina.utils import check_file_extension, uncompress
 from dorina.config import config
@@ -28,7 +29,7 @@ class EnsemblFTP(object):
     """
 
     def __init__(self, version=config.get('DEFAULT', 'version'),
-                 organism=config.get('DEFAULT', 'organism'), *args, **kwargs):
+                 organism=config.get('DEFAULT', 'organism')):
         self.base_url = 'ftp.ensemblorg.ebi.ac.uk'
         self.url = []
         self.local_data = config.get('DEFAULT', 'data_path')
@@ -66,7 +67,7 @@ class EnsemblFTP(object):
             ftp.close()
 
         if not available_dir:
-            log.warning('No available files in {}'.format(url))
+            log.warning('No available files in {}'.format(self.base_url + url))
 
         self.available[url] = available_dir
 
@@ -99,9 +100,14 @@ class EnsemblFTP(object):
             log.info('{} available, aborting retrieval.'.format(filename))
             return False
         else:
-            urlretrieve('ftp://' + self.base_url + url, filename)
-            log.info('{} retrieval complete.'.format(filename))
-            return True
+            try:
+                urlretrieve('ftp://' + self.base_url + url, filename)
+                log.info('{} retrieval complete.'.format(filename))
+                return True
+            except URLError as e:
+                log.error('Error retrieving {}: \n{}'.format(
+                    'ftp://' + self.base_url + url, e))
+                raise e
 
     def retrieve_all(self):
         for url in reversed(self.url):
@@ -109,7 +115,7 @@ class EnsemblFTP(object):
                 retrieved = self.retrieve_file_from_url(url)
             except (IOError, ) as e:
                 self.url = []
-                raise(e)
+                raise e
 
             filename = self.filename_from_url(url)
             if retrieved:
@@ -127,6 +133,17 @@ class EnsemblFTP(object):
         self.url = [url for url in self.url
                     if check_file_extension(url, extension)]
 
+    def list_ftp_directory(self, directory):
+        """
+        .. notes:: substitutes check_available
+
+        :param str directory:
+        :return list: listed files on the FTP directory
+        """
+        response = urlopen('ftp://' + self.base_url + directory)
+        txt = response.read()
+        return [str(x).split()[-1] for x in txt.splitlines()]
+
     def get_assembly(self, version=None, organism=None):
         """
         This is a hack to get the Assembly for a Ensembl release and organism.
@@ -140,10 +157,13 @@ class EnsemblFTP(object):
         if organism is None:
             organism = self.organism
         url = u'/pub/{}/gff3/{}/'.format(version, organism)
-        self.check_available(url)
-        assembly = self.available[url][-2].split('.')[1]
-        self.available = {}
-        return assembly
+        directory_list = self.list_ftp_directory(url)
+        name = directory_list[2]  # Ignores CHECKSUMS and README
+
+        start = name.find(organism.capitalize()) + len(organism + '.')
+        end = name.find('.' + version.split('-')[1])
+
+        return name[start: end]
 
     def retrieve_from_tsv_by_index(self, extension='tsv.gz', file_index=5):
         """
@@ -201,7 +221,6 @@ class EnsemblFTP(object):
         url = u'/pub/{}/gff3/{}/{}.{}.{}.gff3.gz'.format(
             self.version, self.organism, self.organism.capitalize(),
             self.assembly, self.version[-2:])
-        self.check_available(url)
         self.url.append(url)
         return list(self.retrieve_all())
 
@@ -230,8 +249,8 @@ class EnsemblFTP(object):
     def retrieve_from_regulation_by_experiment(self, extension='bed',
                                                tissue=None, experiment='*'):
         """
-        Retrieves Regulation bed files from Ensembl FTP server by experiment name
-        The regulation directory structure is:
+        Retrieves Regulation bed files from Ensembl FTP server by experiment
+        name. For Human, the regulation directory structure is:
         -  CHECKSUM
         -  Peaks
         -  QualityCheck
@@ -249,7 +268,6 @@ class EnsemblFTP(object):
                                                           self.organism,
                                                           tissue,
                                                           experiment)
-        # TODO should we support other type of experiments ?
 
         if '*' in url:
             url = url.replace('*', '')
@@ -273,7 +291,7 @@ class EnsemblRest(object):
     >>> rest.ping()
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         self.base_url = kwargs.get('base_url', 'http://rest.ensembl.org/')
         self.headers = kwargs.get('headers',
                                   {'content-type': 'application/json'})
@@ -315,14 +333,15 @@ class EnsemblRest(object):
         return self.get(ext, params=params)
 
     def get_genomic_alignment(self):
-        pass  # todo
+        pass
 
     def get_phenotype_by_region(self, organism, chromosome, start, end):
         """
         ..Note Maximum region length is 5 Mb.
         :param str organism: Organism scientific name, such as homo_sapiens
         :param int chromosome: Chromosome number, eg: 9
-        :param int start: First base pair of the query in genomic region (0 based index)
+        :param int start: First base pair of the query in genomic region
+        (0 based index)
         :param int end: Last base of the query in the genomic region (inclusive)
         :return dict:
         """
