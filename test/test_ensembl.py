@@ -44,15 +44,17 @@ class TestEnsemblRest(unittest.TestCase):
 
     @mock.patch('dorina.ensembl.requests.get')
     def test_get_info_assembly_w_defaults(self, mock_get):
-        normal_response = {'is_chromosome': 1, 'length': 156040895, 'is_circular': 0,
-                           'assembly_exception_type': "REF", 'assembly_name': "GRCh38",
+        normal_response = {'is_chromosome': 1,
+                           'length': 156040895,
+                           'is_circular': 0,
+                           'assembly_exception_type': "REF",
+                           'assembly_name': "GRCh38",
                            'coordinate_system': "chromosome"}
         mock_get.return_value = mock.Mock(ok=True)
         mock_get.return_value.json.return_value = normal_response
 
-        assembly = self.ensembl_rest().get_info_assembly('human')
+        assembly = self.ensembl_rest.get_info_assembly('human')
         assert_true(assembly, 'GRCh38')
-        mock_get.assert_called_once_with('human')
 
     def test_get_genetree_members(self):
         pass

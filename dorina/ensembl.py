@@ -28,20 +28,28 @@ class EnsemblFTP(object):
     organisms. In fact, it won't.
     """
 
-    def __init__(self, version=config.get('DEFAULT', 'version'),
+    def __init__(self, release=config.get('DEFAULT', 'version'),
                  organism=config.get('DEFAULT', 'organism')):
         self.base_url = 'ftp.ensemblorg.ebi.ac.uk'
         self.url = []
         self.local_data = config.get('DEFAULT', 'data_path')
-        self.version = version
+        self.release = release
         self.organism = organism
         self.available = {}
         self._file_name = None
 
-        self.assembly = self.get_assembly(
-            version=version, organism=self.organism)
         try:
-            os.makedirs(path.join(self.local_data + self.assembly))
+            self.assembly = self.get_assembly(
+                version=release, organism=self.organism)
+        except URLError:
+            raise ValueError(
+                'Unable to retrieve assembly information for {}  release {}, '
+                'probably because unsupported  release number (last supported '
+                'release number for homo_sapiens is 67.')
+
+        try:
+            os.makedirs(
+                path.join(self.local_data + self.assembly + '_' + self.release))
         except OSError:
             log.info('{} exists, aborting makedir.'.format(
                 path.join(self.local_data + self.assembly)))
@@ -153,17 +161,13 @@ class EnsemblFTP(object):
         :return str: assembly name
         """
         if version is None:
-            version = self.version
+            version = self.release
         if organism is None:
             organism = self.organism
-        url = u'/pub/{}/gff3/{}/'.format(version, organism)
+        url = u'/pub/{}/data_files/{}/'.format(version, organism)
         directory_list = self.list_ftp_directory(url)
-        name = directory_list[2]  # Ignores CHECKSUMS and README
 
-        start = name.find(organism.capitalize()) + len(organism + '.')
-        end = name.find('.' + version.split('-')[1])
-
-        return name[start: end]
+        return directory_list[0].replace("'", "")
 
     def retrieve_from_tsv_by_index(self, extension='tsv.gz', file_index=5):
         """
@@ -183,7 +187,7 @@ class EnsemblFTP(object):
 
         Default is the karyotype file with chromosome's lengths
         """
-        url = u'/pub/{}/tsv/{}/'.format(self.version, self.organism)
+        url = u'/pub/{}/tsv/{}/'.format(self.release, self.organism)
         self.check_available(url)
         self.url.append(self.available[url][file_index])
         self.check_extension(extension)
@@ -203,7 +207,7 @@ class EnsemblFTP(object):
 
         Default is the GFF3 file with all chromosomes
         """
-        url = u'/pub/{}/{}/{}/'.format(self.version, extension, self.organism)
+        url = u'/pub/{}/{}/{}/'.format(self.release, extension, self.organism)
         self.check_available(url)
         self.url.append(self.available[url][file_index])
         self.check_extension(extension)
@@ -219,8 +223,8 @@ class EnsemblFTP(object):
         """
 
         url = u'/pub/{}/gff3/{}/{}.{}.{}.gff3.gz'.format(
-            self.version, self.organism, self.organism.capitalize(),
-            self.assembly, self.version[-2:])
+            self.release, self.organism, self.organism.capitalize(),
+            self.assembly, self.release[-2:])
         self.url.append(url)
         return list(self.retrieve_all())
 
@@ -241,7 +245,7 @@ class EnsemblFTP(object):
         """
         # /pub/release-90/variation/vcf/homo_sapiens/Homo_sapiens.vcf.gz
         self.url.append(u'/pub/{}/variation/vcf/{}/{}.{}'.format(
-            self.version, self.organism, self.organism.capitalize(), extension))
+            self.release, self.organism, self.organism.capitalize(), extension))
         self.check_extension(extension)
 
         return list(self.retrieve_all())
@@ -264,7 +268,7 @@ class EnsemblFTP(object):
         """
         if tissue is None:
             tissue = config.get('DEFAULT', 'tissue')
-        url = u'/pub/{}/regulation/{}/Peaks/{}/{}'.format(self.version,
+        url = u'/pub/{}/regulation/{}/Peaks/{}/{}'.format(self.release,
                                                           self.organism,
                                                           tissue,
                                                           experiment)

@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 """
-Created on 16:08 11/10/2017 2017 
-
+Created on 16:08 11/10/2017 2017
 """
 import functools
 import logging
@@ -78,7 +77,7 @@ def create_assembly(release, organism, variation, regulation):
     """Retrieves the data files for a given Ensembl release version and
     organism """
     log.info('Retrieving gff files for {} {}'.format(release, organism))
-    ftp = EnsemblFTP(organism=organism, version=release)
+    ftp = EnsemblFTP(organism=organism, release=release)
     try:
         assembly = ftp.assembly
     except (IndexError,):
@@ -215,24 +214,31 @@ def run_dorina(genome, debug, quiet, set_a, set_b, genes, match_a, match_b,
 
     result = dorina.analyse(genome, set_a, match_a, region_a, set_b, match_b,
                             region_b, combine, genes, window_a, window_b)
-    print(result)
+    click.echo(result)
     sys.exit(0)
 
 
 @click.command()
+# @click.argument('datadir', default=config.get('DEFAULT', 'data_path'),
+#                 type=click.Path(exists=True, dir_okay=True, readable=True))
 def list_genomes():
-    """List all available genomes"""
-    genomes = Genome.all()
-    print("Available genomes:")
-    print("------------------")
-    for species, species_dict in genomes.items():
-        print("\t%s" % species)
+    """List all available genomes in given directory"""
+    genomes = Genome().all()
+
+    if genomes is None:
+        click.echo('No genomes available.')
+        sys.exit()
+
+    click.echo("Available genomes:")
+    click.echo("------------------")
+    for species, species_dict in genomes.all().items():
+        click.echo("\t%s" % species)
         for assembly, assembly_dict in species_dict['assemblies'].items():
-            print("\t\t%s" % assembly)
+            click.echo("\t\t%s" % assembly)
             gffs = assembly_dict.items()
             gffs.sort(key=lambda x: x[0])
             for gff in gffs:
-                print("\t\t\t%s: %s" % gff)
+                click.echo("\t\t\t%s: %s" % gff)
     sys.exit(0)
 
 
@@ -240,15 +246,25 @@ def list_genomes():
 def list_regulators():
     """List all available regulators"""
     regulators = Regulator.all()
-    print("Available regulators:")
-    print("---------------------")
+    if regulators is None:
+        click.echo('No regulators available.')
+        sys.exit()
+
+    click.echo("Available regulators:")
+    click.echo("---------------------")
     for species, species_dict in regulators.items():
-        print("\t%s" % species)
+        click.echo("\t%s" % species)
         for assembly, assembly_dict in species_dict.items():
-            print("\t\t%s" % assembly)
+            click.echo("\t\t%s" % assembly)
             for regulator, regulator_dict in assembly_dict.items():
-                print("\t\t\t%s" % regulator)
+                click.echo("\t\t\t%s" % regulator)
     sys.exit(0)
+
+
+@click.command()
+def setup_dorina():
+    # TODO change the config from the command line.
+    raise NotImplementedError
 
 
 cli.add_command(create_assembly)
