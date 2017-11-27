@@ -4,6 +4,9 @@
 Created on 09:32 10/10/2017 2017
 
 """
+from __future__ import unicode_literals
+from builtins import str
+from builtins import object
 import os
 from os import path
 import logging
@@ -280,7 +283,7 @@ class EnsemblFTP(object):
         for _url in self.available[url]:
             self.check_available(_url)
         del self.available[url]
-        [self.url.extend(x) for x in self.available.values()]
+        [self.url.extend(x) for x in list(self.available.values())]
         self.check_extension(extension)
 
         return list(self.retrieve_all())

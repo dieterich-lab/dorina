@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 
+from __future__ import unicode_literals
+from builtins import object
 import os
 import json
 from pybedtools import BedTool
@@ -98,8 +100,8 @@ file as well as a BED file containing the data.
             raise ValueError("Must provide assembly")
 
         filename = None
-        for species, species_dir in cls._regulators.items():
-            for _assembly, assembly_dir in species_dir.items():
+        for species, species_dir in list(cls._regulators.items()):
+            for _assembly, assembly_dir in list(species_dir.items()):
                 if assembly == _assembly and name_or_path in assembly_dir:
                     basename = os.path.splitext(assembly_dir[name_or_path]['file'])[0]
                     filename = basename + ".bed"
@@ -113,8 +115,6 @@ file as well as a BED file containing the data.
     def from_names(names, assembly):
         if names:
             return list(
-                map(
-                    lambda x: Regulator.from_name(x, assembly).bed,
-                    names))
+                [Regulator.from_name(x, assembly).bed for x in names])
         else:
             return []

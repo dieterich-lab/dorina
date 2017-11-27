@@ -3,6 +3,7 @@
 """
 Created on 16:08 11/10/2017 2017
 """
+from __future__ import unicode_literals
 import functools
 import logging
 import os
@@ -102,7 +103,7 @@ def create_assembly(release, organism, variation, regulation):
                "three_prime": "3_utr",
                "five_prime": "5_utr"}
 
-    for k, v in mapping.items():
+    for k, v in list(mapping.items()):
         log.debug('Creating {}.gff3 file'.format(v))
         call_command(
             "grep {} {}".format(k, gff.replace('.gz', '')).split(),
@@ -205,8 +206,7 @@ def run_dorina(genome, debug, quiet, set_a, set_b, genes, match_a, match_b,
         sys.exit(1)
 
     try:
-        set_a = map(lambda x: Regulator.from_name(x, assembly=genome).basename,
-                    set_a)
+        set_a = [Regulator.from_name(x, assembly=genome).basename for x in set_a]
     except ValueError as e:
         log.error(e)
         list_regulators()
@@ -231,11 +231,11 @@ def list_genomes():
 
     click.echo("Available genomes:")
     click.echo("------------------")
-    for species, species_dict in genomes.all().items():
+    for species, species_dict in list(genomes.all().items()):
         click.echo("\t%s" % species)
-        for assembly, assembly_dict in species_dict['assemblies'].items():
+        for assembly, assembly_dict in list(species_dict['assemblies'].items()):
             click.echo("\t\t%s" % assembly)
-            gffs = assembly_dict.items()
+            gffs = list(assembly_dict.items())
             gffs.sort(key=lambda x: x[0])
             for gff in gffs:
                 click.echo("\t\t\t%s: %s" % gff)
@@ -252,11 +252,11 @@ def list_regulators():
 
     click.echo("Available regulators:")
     click.echo("---------------------")
-    for species, species_dict in regulators.items():
+    for species, species_dict in list(regulators.items()):
         click.echo("\t%s" % species)
-        for assembly, assembly_dict in species_dict.items():
+        for assembly, assembly_dict in list(species_dict.items()):
             click.echo("\t\t%s" % assembly)
-            for regulator, regulator_dict in assembly_dict.items():
+            for regulator, regulator_dict in list(assembly_dict.items()):
                 click.echo("\t\t\t%s" % regulator)
     sys.exit(0)
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 
+from __future__ import unicode_literals
 import unittest
 from os import path
 from argparse import Namespace
@@ -21,7 +22,7 @@ class TestConfig(unittest.TestCase):
     def test_load_config(self):
         """Test config.load_config()"""
         config._basedir = path.dirname(__file__)
-        config._default_name = 'test.cfg'
+        c = config._default_name = 'test.cfg'
         c = Namespace(testing=True)
 
     def test_set_config(self):

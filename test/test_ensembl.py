@@ -4,8 +4,12 @@
 Created on 07:41 16/10/2017 2017 
 
 """
+from __future__ import unicode_literals
 import unittest
-from unittest import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from nose.tools import assert_true, raises
 from requests.exceptions import HTTPError

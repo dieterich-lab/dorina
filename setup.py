@@ -1,32 +1,41 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
+from __future__ import unicode_literals
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
+from dorina import __version__
 
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-version = 'undefined'
-for line in open(os.path.join('dorina', '__init__.py'), 'r'):
-    if line.startswith('version'):
-        exec (line.strip())
-
 setup(
     name="dorina",
-    version=version,
+    version=__version__,
     author="Kai Blin",
     author_email="kai.blin@age.mpg.de",
-    description=("database of posttranscriptional regulatory elements"),
+    maintainer="Thiago Britto Borges",
+    maintainer_email="thiago.brittoborges@uni-heidelberg.de",
+    description="database of posttranscriptional regulatory elements",
     keywords="bioinformatics",
-    url="https://bioinf-redmine.age.mpg.de/projects/dorina-2",
-    packages=['dorina', 'dorina.config'],
+    url="https://github.com/dieterich-lab/dorina",
+    packages=find_packages(),
+    package_data={'dorina.config': ['*.cfg']},
+    include_package_data=True,
     install_requires=['Cython', 'pybedtools'],
     tests_require=['nose'],
+    license=read('LICENSE'),
     long_description=read('README.md'),
+
+    entry_points='''
+    [console_scripts]
+    dorina=dorina.__main__.cli''',
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
+        "Intended Audience :: Science/Research",
+        "Programming Language :: Python :: 3.6",
+
     ],
 )

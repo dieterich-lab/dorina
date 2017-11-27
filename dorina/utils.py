@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
+from __future__ import unicode_literals
+from builtins import str
+from builtins import object
 import gzip
 import logging
 import os
@@ -10,7 +13,7 @@ from os import path
 log = logging.getLogger('dorina.config')
 
 
-class DorinaUtils:
+class DorinaUtils(object):
     @staticmethod
     def walk_assembly_tree(root, parse_func):
         """Walk a directory structure containg clade, species, assembly
@@ -48,7 +51,7 @@ def urljoin(*args):
     Joins given arguments into a url. Trailing but not leading slashes are
     stripped for each argument.\
     """
-    return "/".join(map(lambda x: str(x).rstrip('/'), args))
+    return "/".join([str(x).rstrip('/') for x in args])
 
 
 def write_file(data, data_path, mode='wb'):

@@ -43,9 +43,6 @@ Supported dataset
 - RNA binding predicted
 - Single Nucleotide Variants stored in Ensembl
 
-## Planned:
-- Differential expression data
-- Three-dimensional data
 
 Data layout
 -----------
