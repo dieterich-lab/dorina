@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 from __future__ import unicode_literals
-from builtins import object
 import logging
 import functools
 from os import path

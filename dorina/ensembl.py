@@ -5,8 +5,6 @@ Created on 09:32 10/10/2017 2017
 
 """
 from __future__ import unicode_literals
-from builtins import str
-from builtins import object
 import os
 from os import path
 import logging
@@ -375,10 +373,3 @@ class EnsemblRest(object):
             return r.json()
         else:
             return r.content
-
-
-class ExpressionAtlas(object):
-    """
-    Retrieve differential gene expression experiment from the EBI Gene atlas
-    """
-    pass
