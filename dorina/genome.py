@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 
+from __future__ import unicode_literals
 import os
 import re
 
@@ -42,7 +43,7 @@ class Genome(object):
     def path_by_name(klass, name):
         """Take a genome name and return the path to the genome directory"""
         filename = None
-        for species, species_dir in klass._genomes.items():
+        for species, species_dir in list(klass._genomes.items()):
             if name in species_dir['assemblies']:
                 filename = os.path.join(klass._datadir, 'genomes', species, name)
 

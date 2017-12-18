@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 
+from __future__ import unicode_literals
 import unittest
 from os import path
-from argparse import Namespace
-import json
 
-import dorina
-from dorina import config
 from dorina.genome import Genome
-from pybedtools import BedTool
 
 
 class TestListDataWithoutOptions(unittest.TestCase):

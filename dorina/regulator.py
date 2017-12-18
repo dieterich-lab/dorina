@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 
+from __future__ import unicode_literals
 import os
 import json
 from pybedtools import BedTool
@@ -21,16 +22,19 @@ class Regulator(object):
     @classmethod
     def init(cls, datadir):
         def parse_experiment(filename):
-            experiment = {}
-            with open(filename, 'r') as fh:
-                experiment = json.load(fh)
-            return experiment
+            """Return the the experiment annotation as a python object.
+
+            :param str filename: path to experiment file
+            :return dict: parsed experiment
+            """
+
+            with open(filename) as fh:
+                return json.load(fh)
 
         def parse_func(root):
-            """Parse function used to initialise the regulators from the data directory.
-Gets all available regulators.  A valid regulator must have a JSON metadata
-file as well as a BED file containing the data.
-
+            """Parse function used to initialise the regulators from the data
+            directory. Gets all available regulators.  A valid regulator must
+            have a JSON metadata file as well as a BED file containing the data.
             """
 
             regulators = {}
@@ -56,8 +60,9 @@ file as well as a BED file containing the data.
             return regulators
 
         cls._datadir = datadir
-        cls._regulators = DorinaUtils.walk_assembly_tree(os.path.join(datadir, 'regulators'),
-                                                         parse_func)
+        cls._regulators = DorinaUtils.walk_assembly_tree(
+            os.path.join(datadir, 'regulators'),
+            parse_func)
 
     @classmethod
     def all(cls):
@@ -98,10 +103,11 @@ file as well as a BED file containing the data.
             raise ValueError("Must provide assembly")
 
         filename = None
-        for species, species_dir in cls._regulators.items():
-            for _assembly, assembly_dir in species_dir.items():
+        for species, species_dir in list(cls._regulators.items()):
+            for _assembly, assembly_dir in list(species_dir.items()):
                 if assembly == _assembly and name_or_path in assembly_dir:
-                    basename = os.path.splitext(assembly_dir[name_or_path]['file'])[0]
+                    basename = \
+                    os.path.splitext(assembly_dir[name_or_path]['file'])[0]
                     filename = basename + ".bed"
 
         if not filename or not os.path.isfile(filename):
@@ -113,8 +119,6 @@ file as well as a BED file containing the data.
     def from_names(names, assembly):
         if names:
             return list(
-                map(
-                    lambda x: Regulator.from_name(x, assembly).bed,
-                    names))
+                [Regulator.from_name(x, assembly).bed for x in names])
         else:
             return []
