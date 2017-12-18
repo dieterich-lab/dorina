@@ -5,38 +5,19 @@ language: python
 
 os:
   - linux
-#  - osx
 
 python:
   - "2.7"
   - "3.5"
   - "3.6"
-#  - "pypy"  # PyPy2 2.5.0
-#  - "pypy3" # Pypy3 2.4.0
 
 before_install:
-
-  # Steps to Install miniconda & bedtools
-  # https://conda.io/docs/user-guide/tasks/use-conda-with-travis-ci.htmlinstall:
-  - sudo apt-get update
-
-  # We do this conditionally because it saves us some downloading if the
-  # version is the same.
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update conda
-  # Useful for debugging any issues with conda
-  - conda info -a
-  - conda create -n test-env python=$TRAVIS_PYTHON_VERSION -c bioconda --file requirements.txt
-  - source activate test-env
-  - conda install --file requirements.txt --file test_requirements.txt
+  - wget https://github.com/arq5x/bedtools2/releases/download/v2.27.1/bedtools-2.27.1.tar.gz
+  - tar -zxvf bedtools-2.27.1.tar.gz
+  - cd bedtools2
+  - make
+  - cd
+  - pip install -r requirements.txt - test_requirements.txt
 
 install:
   - python setup.py install
