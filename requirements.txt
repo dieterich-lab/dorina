@@ -3,3 +3,4 @@ requests
 click
 Cython
 pybedtools
+python-coveralls
