@@ -8,7 +8,7 @@ import json
 import shutil
 from os import path
 
-log = logging.getLogger(b'dorina.config')
+log = logging.getLogger(r'dorina.config')
 
 
 class DorinaUtils(object):
