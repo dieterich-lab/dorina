@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 import logging
+from copy import copy
 from os import path
 
 import sys
@@ -19,9 +20,9 @@ logging.basicConfig(stream=sys.stderr, level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s ')
 
 
-def load_configuration():
+def load_configuration(config_path=path.join(_basedir, _default_name)):
     configuration = configparser.ConfigParser()
-    with open(path.join(_basedir, _default_name)) as f:
+    with open(config_path) as f:
         try:
             configuration.read_file(f)
         except AttributeError:  # py27 support
@@ -33,7 +34,7 @@ def validate_configuration(configuration):
     default_path = configuration.get('DEFAULT', 'data_path')
     if '~' in default_path:
         configuration.set(
-            'DEFAULT', 'data_path', value= expand_path(default_path))
+            'DEFAULT', 'data_path', value=expand_path(default_path))
 
     return configuration
 
