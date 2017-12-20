@@ -69,7 +69,7 @@ def check_file_extension(filename, extension):
     # return extension in filename.replace(ignore, '').rsplit('.', 1)[-1]
 
 
-def expand_path(path_):
+def validate_data_path(path_):
     """
     Check whether path is writable
 
@@ -80,7 +80,7 @@ def expand_path(path_):
         path_ = path.expanduser(path_)
 
     if not os.access(path_, os.W_OK):
-        raise OSError('User does not have writing permissions in {}'.format(path_))
+        log.error('User does not have writing permissions in {}'.format(path_))
     return path_
 
 

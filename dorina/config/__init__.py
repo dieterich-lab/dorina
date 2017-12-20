@@ -7,7 +7,7 @@ from os import path
 import sys
 from six.moves import configparser
 
-from dorina.utils import expand_path
+from dorina.utils import validate_data_path
 
 __all__ = ['config']
 _basedir = path.dirname(path.abspath(__file__))
@@ -34,7 +34,7 @@ def validate_configuration(configuration):
     default_path = configuration.get('DEFAULT', 'data_path')
     if '~' in default_path:
         configuration.set(
-            'DEFAULT', 'data_path', value=expand_path(default_path))
+            'DEFAULT', 'data_path', value=validate_data_path(default_path))
 
     return configuration
 
