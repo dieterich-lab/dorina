@@ -16,10 +16,9 @@ before_install:
   - tar -zxvf bedtools-2.27.1.tar.gz
   - cd bedtools2
   - make
-  - cd
-  - pip install -r requirements.txt -r test_requirements.txt
 
 install:
+  - pip install -r requirements.txt -r test_requirements.txt
   - python setup.py install
 
 script:
