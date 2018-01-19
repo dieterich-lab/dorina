@@ -2,7 +2,6 @@
 # -*- coding: utf-8
 
 from __future__ import unicode_literals
-from io import open
 import os
 import json
 from pybedtools import BedTool
@@ -29,7 +28,7 @@ class Regulator(object):
             :return dict: parsed experiment
             """
 
-            with open(filename) as fh:
+            with open(filename, encoding="utf-8") as fh:
                 return json.load(fh)
 
         def parse_func(root):

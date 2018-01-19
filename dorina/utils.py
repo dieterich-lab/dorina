@@ -7,7 +7,6 @@ import os
 import json
 import shutil
 from os import path
-from io import open
 
 log = logging.getLogger(r'dorina.config')
 
@@ -36,7 +35,7 @@ class DorinaUtils(object):
             # Genomes have description files, regulators don't.
             description_file = os.path.join(species_path, 'description.json')
             try:
-                with open(description_file) as fh:
+                with open(description_file, encoding="utf-8") as fh:
                     genomes[species] = json.load(fh)
                     genomes[species]['assemblies'] = species_dict
             except IOError:

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 from __future__ import unicode_literals
-from io import open
 import os
 import re
 
@@ -68,7 +67,7 @@ class Genome(object):
         genome = os.path.join(genome_dir, 'all.gff')
         if not os.path.exists(genome):
             return genes
-        with open(genome) as of:
+        with open(genome, encoding="utf-8") as of:
             for line in of:
                 match = gene_name.match(line)
                 if match is not None:

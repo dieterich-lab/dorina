@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 import logging
-from copy import copy
+import sys
 from os import path
 
-import sys
 from six.moves import configparser
 
 from dorina.utils import validate_data_path
@@ -22,7 +21,7 @@ logging.basicConfig(stream=sys.stderr, level=logging.INFO,
 
 def load_configuration(config_path=path.join(_basedir, _default_name)):
     configuration = configparser.ConfigParser()
-    with open(config_path) as f:
+    with open(config_path, encoding="utf-8") as f:
         try:
             configuration.read_file(f)
         except AttributeError:  # py27 support
