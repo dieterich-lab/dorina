@@ -1,4 +1,9 @@
-[report]
+[run]
+branch = False
+
+source = dorina
+
 omit =
     */python?.?/*
     */site-packages/nose/*
+    */tests/*
