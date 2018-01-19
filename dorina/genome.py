@@ -68,7 +68,7 @@ class Genome(object):
         genome = os.path.join(genome_dir, 'all.gff')
         if not os.path.exists(genome):
             return genes
-        with open(genome, 'r') as of:
+        with open(genome, 'rb') as of:
             for line in of:
                 match = gene_name.match(line)
                 if match is not None:

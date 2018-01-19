@@ -28,7 +28,7 @@ class Regulator(object):
             :return dict: parsed experiment
             """
 
-            with open(filename) as fh:
+            with open(filename, "rb") as fh:
                 return json.load(fh)
 
         def parse_func(root):

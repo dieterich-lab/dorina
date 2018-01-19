@@ -35,7 +35,7 @@ class DorinaUtils(object):
             # Genomes have description files, regulators don't.
             description_file = os.path.join(species_path, 'description.json')
             try:
-                with open(description_file) as fh:
+                with open(description_file, 'rb') as fh:
                     genomes[species] = json.load(fh)
                     genomes[species]['assemblies'] = species_dict
             except IOError:
@@ -95,7 +95,7 @@ def uncompress(filename):
     if extension not in ('gz',):
         raise NotImplementedError("Extension {} is unsupported.".format(extension))
 
-    with gzip.open(filename) as _input, \
+    with gzip.open(filename, 'wb') as _input, \
             open(uncompressed_filename, 'wb') as output:
         shutil.copyfileobj(_input, output)
         shutil.os.remove(filename)
