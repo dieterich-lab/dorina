@@ -7,3 +7,4 @@ omit =
     */python?.?/*
     */site-packages/nose/*
     */tests/*
+    dorina/__main__.py
