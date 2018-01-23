@@ -10,7 +10,7 @@ import os
 from subprocess import check_call, Popen, PIPE
 import shutil
 import sys
-
+from io import open
 import click
 
 from dorina import __version__, run

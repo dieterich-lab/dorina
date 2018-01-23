@@ -6,6 +6,7 @@ import os
 import json
 from pybedtools import BedTool
 from dorina.utils import DorinaUtils
+from io import open
 
 
 class Regulator(object):

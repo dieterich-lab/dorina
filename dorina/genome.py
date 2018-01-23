@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 import os
 import re
+from io import open
 
 from dorina.utils import DorinaUtils
 

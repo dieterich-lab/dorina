@@ -7,6 +7,7 @@ import os
 import json
 import shutil
 from os import path
+from io import open
 
 log = logging.getLogger(r'dorina.config')
 
