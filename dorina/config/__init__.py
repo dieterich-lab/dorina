@@ -3,6 +3,7 @@
 import logging
 import sys
 from os import path
+from io import open
 
 from six.moves import configparser
 
