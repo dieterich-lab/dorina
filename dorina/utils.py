@@ -9,7 +9,7 @@ import shutil
 from os import path
 from io import open
 
-log = logging.getLogger(r'dorina.config')
+log = logging.getLogger(__name__)
 
 
 class DorinaUtils(object):

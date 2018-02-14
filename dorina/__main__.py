@@ -19,8 +19,11 @@ from dorina.ensembl import EnsemblFTP
 from dorina.genome import Genome
 from dorina.regulator import Regulator
 
-log = logging.getLogger('dorina.config')
-
+# https://stackoverflow.com/a/15729700/1694714
+log = logging.getLogger(__name__)
+logging.captureWarnings(True)
+logging.basicConfig(stream=sys.stderr, level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s ')
 
 def call_command(command, stdout=None, cwd=None, mode='w', stdin=None):
     """

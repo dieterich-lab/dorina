@@ -17,7 +17,7 @@ from six.moves.urllib.error import URLError
 from dorina.utils import check_file_extension, uncompress
 from dorina.config import config
 
-log = logging.getLogger('dorina.config')
+log = logging.getLogger(__name__)
 
 
 class EnsemblFTP(object):

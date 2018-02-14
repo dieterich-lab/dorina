@@ -4,3 +4,5 @@ click
 Cython
 pybedtools
 python-coveralls
+bioservices
+nose

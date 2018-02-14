@@ -5,7 +5,9 @@ Created on 07:41 16/10/2017 2017
 
 """
 from __future__ import unicode_literals
+
 import unittest
+
 try:
     from unittest import mock
 except ImportError:
@@ -14,7 +16,7 @@ except ImportError:
 from nose.tools import assert_true, raises
 from requests.exceptions import HTTPError
 
-from dorina.ensembl import EnsemblFTP, EnsemblRest
+from dorina.ensembl import EnsemblRest
 
 
 class TestEnsemblRest(unittest.TestCase):
@@ -66,3 +68,9 @@ class TestEnsemblRest(unittest.TestCase):
 
 class TestEnsemblFTP(unittest.TestCase):
     pass
+
+
+if __name__ == '__main__':
+    import nose
+
+    nose.runmodule()
