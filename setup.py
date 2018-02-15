@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 import os
+
 from setuptools import setup, find_packages
+
 from dorina import __version__
 
 
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+def read(file_name):
+    with open(os.path.join(os.path.dirname(__file__), file_name)) as f:
+        return f.read()
 
 
 setup(
@@ -22,19 +25,16 @@ setup(
     packages=find_packages(),
     package_data={'dorina.config': ['*.cfg']},
     include_package_data=True,
-    install_requires=['Cython', 'pybedtools'],
+    install_requires=read('requirements.txt').splitlines(),
     tests_require=['nose'],
     license=read('LICENSE'),
     long_description=read('README.md'),
 
     entry_points='''
     [console_scripts]
-    dorina=dorina.__main__.cli''',
+    dorina=dorina.__main__:cli''',
     classifiers=[
         "Development Status :: 4 - Beta",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Intended Audience :: Science/Research",
-        "Programming Language :: Python :: 3.6",
-
-    ],
-)
+        "Programming Language :: Python :: 3.6"])

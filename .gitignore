@@ -24,3 +24,4 @@ dorina/config/__pycache__/
 dorina_ensembl.ipynb
 dorina_steps.md
 /.idea/
+!/test/test_expression.py
