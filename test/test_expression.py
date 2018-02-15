@@ -176,7 +176,7 @@ class TestExpression(unittest.TestCase):
 
     @mock.patch('dorina.expression.read_table')
     def test_retrieve_fpkm_from_study(self, mock_read_table):
-        mock_read_table.return_value = self.study_gene_fpkm_response
+        mock_read_table.return_value = self.study_gene_fpkm_response.T
         data = self.fpkm_from_study(
             [{'GENES_FPKM_COUNTS_FTP_LOCATION': 'test'}])
         assert_frame_equal(data, self.study_gene_fpkm_response)

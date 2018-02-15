@@ -2,8 +2,10 @@
 # -*- coding: utf-8
 
 from __future__ import unicode_literals
+
 import unittest
 from os import path
+
 from pybedtools import BedTool
 
 from dorina import run
@@ -31,7 +33,8 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         bed_str = """chr1   doRiNA2 gene    1   1000    .   +   .   ID=gene01.01    chr1    250 260 PARCLIP#scifi*scifi_cds 5   +
         chr1    doRiNA2 gene    2001    3000    .   +   .   ID=gene01.02    chr1    2350    2360    PARCLIP#scifi*scifi_intron  5   +"""
         expected = BedTool(bed_str, from_string=True)
-        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any', region_a='any')
+        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any',
+                               region_a='any')
         self.assertEqual(expected, got)
 
         got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'])
@@ -41,7 +44,8 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         """Test run.analyse() on CDS regions with a single regulator"""
         bed_str = """chr1   doRiNA2 CDS 201 300 .   +   0   ID=gene01.01    chr1    250 260 PARCLIP#scifi*scifi_cds 5   +"""
         expected = BedTool(bed_str, from_string=True)
-        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any', region_a='CDS')
+        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any',
+                               region_a='CDS')
         self.assertEqual(expected, got)
 
         got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], region_a='CDS')
@@ -55,7 +59,8 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
                                region_a='intergenic')
         self.assertEqual(expected, got)
 
-        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], region_a='intergenic')
+        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'],
+                               region_a='intergenic')
         self.assertEqual(expected, got)
 
     def test_analyse_all_regions_seta_any(self):
@@ -63,7 +68,8 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         bed_str = """chr1   doRiNA2 gene    1   1000    .   +   .   ID=gene01.01    chr1    255 265 PICTAR#fake01*fake01_cds    5   +
         chr1    doRiNA2 gene    2001    3000    .   +   .   ID=gene01.02    chr1    2450    2460    PICTAR#fake02*fake02_intron 5   +"""
         expected = BedTool(bed_str, from_string=True)
-        got = self.run.analyse('hg19', set_a=['PICTAR_fake01', 'PICTAR_fake02'], match_a='any',
+        got = self.run.analyse('hg19', set_a=['PICTAR_fake01', 'PICTAR_fake02'],
+                               match_a='any',
                                region_a='any')
         self.assertMultiLineEqual(str(expected), str(got))
 
@@ -76,11 +82,13 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         bed_str = """chr1   doRiNA2 gene    1   1000    .   +   .   ID=gene01.01    chr1    250 260 PARCLIP#scifi*scifi_cds 5   +
         chr1    doRiNA2 gene    1   1000    .   +   .   ID=gene01.01    chr1    255 265 PICTAR#fake01*fake01_cds    5   +"""
         expected = BedTool(bed_str, from_string=True)
-        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi', 'PICTAR_fake01'], match_a='all',
+        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi', 'PICTAR_fake01'],
+                               match_a='all',
                                region_a='any')
         self.assertMultiLineEqual(str(expected), str(got))
 
-        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi', 'PICTAR_fake01'], match_a='all')
+        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi', 'PICTAR_fake01'],
+                               match_a='all')
         self.assertEqual(expected, got)
 
     def test_analyse_all_regions_seta_and_setb(self):
@@ -89,8 +97,10 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         bed_str = """chr1   doRiNA2 gene    1   1000    .   +   .   ID=gene01.01    chr1    250 260 PARCLIP#scifi*scifi_cds 5   +
         chr1    doRiNA2 gene    1   1000    .   +   .   ID=gene01.01    chr1    255 265 PICTAR#fake01*fake01_cds    5   +"""
         expected = BedTool(bed_str, from_string=True)
-        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any', region_a='any',
-                               set_b=['PICTAR_fake01'], match_b='any', region_b='any',
+        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any',
+                               region_a='any',
+                               set_b=['PICTAR_fake01'], match_b='any',
+                               region_b='any',
                                combine='and')
         self.assertMultiLineEqual(str(expected), str(got))
 
@@ -103,8 +113,10 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         chr1    doRiNA2 gene    1   1000    .   +   .   ID=gene01.01    chr1    250 260 PARCLIP#scifi*scifi_cds 5   +
         chr1    doRiNA2 gene    1   1000    .   +   .   ID=gene01.01    chr1    255 265 PICTAR#fake01*fake01_cds    5   +"""
         expected = BedTool(bed_str, from_string=True)
-        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any', region_a='any',
-                               set_b=['PICTAR_fake01'], match_b='any', region_b='any',
+        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any',
+                               region_a='any',
+                               set_b=['PICTAR_fake01'], match_b='any',
+                               region_b='any',
                                combine='or')
         self.assertMultiLineEqual(str(expected), str(got))
 
@@ -113,8 +125,10 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         from set B matching """
         bed_str = """chr1   doRiNA2 gene    2001    3000    .   +   .   ID=gene01.02    chr1    2350    2360    PARCLIP#scifi*scifi_intron  5   +"""
         expected = BedTool(bed_str, from_string=True)
-        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any', region_a='any',
-                               set_b=['PICTAR_fake01'], match_b='any', region_b='any',
+        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any',
+                               region_a='any',
+                               set_b=['PICTAR_fake01'], match_b='any',
+                               region_b='any',
                                combine='xor')
         self.assertMultiLineEqual(str(expected), str(got))
 
@@ -123,23 +137,24 @@ class TestAnalyseWithoutOptions(unittest.TestCase):
         from set B matching """
         bed_str = """chr1   doRiNA2 gene    2001    3000    .   +   .   ID=gene01.02    chr1    2350    2360    PARCLIP#scifi*scifi_intron  5   +"""
         expected = BedTool(bed_str, from_string=True)
-        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any', region_a='any',
-                               set_b=['PICTAR_fake01'], match_b='any', region_b='any',
+        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi'], match_a='any',
+                               region_a='any',
+                               set_b=['PICTAR_fake01'], match_b='any',
+                               region_b='any',
                                combine='not')
         self.assertMultiLineEqual(str(expected), str(got))
 
-    #   TODO confim this test expected result (start number wrong by 1)
     def test_analyse_all_regions_seta_windowed(self):
         """Test run.analyse() on all regions with all regulators from set A matching in an
         overlapping window """
         bed_str = """chr1	doRiNA2	gene	251	260 .	+	.	ID=gene01.01	chr1	250	260 PARCLIP#scifi*scifi_cds	5	+
 chr1	doRiNA2	gene	251	260	.	+	.	ID=gene01.01	chr1	255	265 PICTAR#fake01*fake01_cds	5	+"""
         expected = BedTool(bed_str, from_string=True)
-        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi', 'PICTAR_fake01'], match_a='all',
+        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi', 'PICTAR_fake01'],
+                               match_a='all',
                                window_a=0)
         self.assertMultiLineEqual(str(expected), str(got))
 
-    # TODO confirm this test expected result
     def test_analyse_all_regions_seta_windowed_slop(self):
         """Test run.analyse() on all regions with all regulators from set A matching in an
         overlapping window with slop """
@@ -149,7 +164,8 @@ chr1	doRiNA2	gene	1	1260	.	+	.	ID=gene01.01	chr1	255	265	PICTAR#fake01*fake01_cd
 chr1	doRiNA2	gene	1351	3360	.	+	.	ID=gene01.02	chr1	2350	2360    PARCLIP#scifi*scifi_intron	5	+
 chr1	doRiNA2	gene	1351	3360	.	+	.	ID=gene01.02	chr1	1350	1360	PICTAR#fake01*fake01_intergenic	5	."""
         expected = BedTool(bed_str, from_string=True)
-        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi', 'PICTAR_fake01'], match_a='all',
+        got = self.run.analyse('hg19', set_a=['PARCLIP_scifi', 'PICTAR_fake01'],
+                               match_a='all',
                                region_a='any',
                                window_a=1000)
         self.assertMultiLineEqual(str(expected), str(got))
@@ -168,7 +184,8 @@ chr1	doRiNA2	gene	1351	3360	.	+	.	ID=gene01.02	chr1	1350	1360	PICTAR#fake01*fake
     def test_get_genome_bedtool(self):
         """Test self.run._get_genome_bedtool()"""
         # should raise a ValueError for an invalid region
-        self.assertRaises(ValueError, self.run._get_genome_bedtool, 'hg19', 'invalid')
+        self.assertRaises(ValueError, self.run._get_genome_bedtool, 'hg19',
+                          'invalid')
 
         expected = BedTool(path.join(Genome.path_by_name('hg19'), 'all.gff'))
         got = self.run._get_genome_bedtool('hg19', 'any')
@@ -190,11 +207,13 @@ chr1	doRiNA2	gene	1351	3360	.	+	.	ID=gene01.02	chr1	1350	1360	PICTAR#fake01*fake
         got = self.run._get_genome_bedtool('hg19', 'intron')
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(Genome.path_by_name('hg19'), 'intergenic.gff'))
+        expected = BedTool(
+            path.join(Genome.path_by_name('hg19'), 'intergenic.gff'))
         got = self.run._get_genome_bedtool('hg19', 'intergenic')
         self.assertEqual(expected, got)
 
-        expected = BedTool(path.join(Genome.path_by_name('hg19'), 'all.gff')).filter(
+        expected = BedTool(
+            path.join(Genome.path_by_name('hg19'), 'all.gff')).filter(
             lambda x: x.name == "gene01.02").saveas()
         got = self.run._get_genome_bedtool('hg19', 'any', genes=['gene01.02'])
         self.assertEqual(expected, got)

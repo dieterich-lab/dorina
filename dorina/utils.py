@@ -54,7 +54,7 @@ def urljoin(*args):
 
 
 def write_file(data, data_path, mode='wb'):
-    with open(data_path, mode) as f:
+    with open(data_path, mode) as f:  # pragma: no cover
         f.write(data)
 
 

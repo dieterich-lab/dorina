@@ -55,9 +55,8 @@ class TestListDataWithoutOptions(unittest.TestCase):
 
     def test_regulator(self):
         """Test Regulator class methods"""
-        # TODO: expect an error, not None!
-        # got = Regulator.from_name("invalid", "hg19")
-        # self.assertIsNone(got)
+        with self.assertRaises(ValueError):
+            Regulator.from_name("invalid", "hg19")
 
         expected = path.join(self.datadir, 'regulators', 'h_sapiens', 'hg19', 'PARCLIP_scifi')
         got = Regulator.from_name("PARCLIP_scifi", "hg19").basename

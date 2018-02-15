@@ -45,7 +45,7 @@ class EnsemblFTP(object):
         except URLError:
             raise ValueError(
                 'Unable to retrieve assembly information for {}  release {}, '
-                'probably because unsupported  release number (last supported '
+                'probably because unsupported release number (last supported '
                 'release number for homo_sapiens is 67.')
 
         try:
@@ -242,7 +242,6 @@ class EnsemblFTP(object):
 
         .. note:
         Only available for human and mice.
-        .. todo: better document each data type.
         """
         # /pub/release-90/variation/vcf/homo_sapiens/Homo_sapiens.vcf.gz
         self.url.append(u'/pub/{}/variation/vcf/{}/{}.{}'.format(
@@ -265,7 +264,6 @@ class EnsemblFTP(object):
 
         .. note:
         Only available for human and mice.
-        .. TODO: Document each data type.
         """
         if tissue is None:
             tissue = config.get('DEFAULT', 'tissue')
@@ -362,7 +360,6 @@ class EnsemblRest(object):
         :param params:
         :return:
         """
-        # TODO limit request number and use requests.Session for retry
         if headers is None:
             headers = self.headers
         r = requests.get(self.base_url + ext, headers=headers, params=params)

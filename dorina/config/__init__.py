@@ -9,9 +9,9 @@ from six.moves import configparser
 
 from dorina.utils import validate_data_path
 
-__all__ = ['config']
 _basedir = path.dirname(path.abspath(__file__))
 _default_name = 'default.cfg'
+
 
 def load_configuration(config_path=path.join(_basedir, _default_name)):
     configuration = configparser.ConfigParser()

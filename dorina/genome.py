@@ -52,13 +52,11 @@ class Genome(object):
 
         return filename
 
-    # TODO: turn this into a regular method on genomes
     @staticmethod
     def get_genes(name):
         """Get a list of genes from genome <name>"""
         genes = []
 
-        # TODO: only do this once when initialising the genome instance
         gene_name = re.compile(r'.*ID=(.*?)($|;\w+)')
 
         genome_dir = Genome.path_by_name(name)
