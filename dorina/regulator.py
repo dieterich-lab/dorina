@@ -104,8 +104,8 @@ class Regulator(object):
             raise ValueError("Must provide assembly")
 
         filename = None
-        for species, species_dir in list(cls._regulators.items()):
-            for _assembly, assembly_dir in list(species_dir.items()):
+        for species, species_dir in cls._regulators.items():
+            for _assembly, assembly_dir in species_dir.items():
                 if assembly == _assembly and name_or_path in assembly_dir:
                     basename = \
                     os.path.splitext(assembly_dir[name_or_path]['file'])[0]
