@@ -9,8 +9,6 @@ import logging
 from bioservices import RNASEQ_EBI
 from pandas import concat, read_table
 
-from dorina.__main__ import assembly_to_organism
-
 log = logging.getLogger(__name__)
 
 retrieve = RNASEQ_EBI()
@@ -66,3 +64,8 @@ def calculate_expressed_genes(data, fpkm_cutoff=1):
 
 if __name__ == "__main__":
     pass
+assembly_to_organism = {'ce6': 'caenorhabditis_elegans',
+                        'dm3': "drosophila_melanogaster",
+                        'hg19': 'homo_sapiens',
+                        'mm9': 'mus_musculus',
+                        'GRCh38': 'homo_sapiens'}

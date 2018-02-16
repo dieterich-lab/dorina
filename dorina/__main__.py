@@ -28,12 +28,6 @@ logging.captureWarnings(True)
 logging.basicConfig(stream=sys.stderr, level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s ')
 
-assembly_to_organism = {'ce6': 'caenorhabditis_elegans',
-                        'dm3': "drosophila_melanogaster",
-                        'hg19': 'homo_sapiens',
-                        'mm9': 'mus_musculus',
-                        'GRCh38': 'homo_sapiens'}
-
 
 def call_command(command, stdout=None, cwd=None, mode='w', stdin=None):
     """
@@ -210,9 +204,14 @@ def run(genome, debug, quiet, seta, setb, genes, matcha, regiona,
         log.setLevel(logging.ERROR)
 
     dorina = run_dorina.Dorina(path)
+    Genome.init(path)
+    mapping = {}
+    for x in Genome.all().values():
+        for y in x['assemblies']:
+            mapping[y] = x['id']
 
-    if seta == 'all':
-        seta = Regulator.all()[assembly_to_organism[genome]][genome].keys()
+    # if 'all' in seta:  # seta is a tuple
+    #     seta = Regulator.all()[mapping[genome]][genome].keys()
 
     result = dorina.analyse(genome, seta, matcha, regiona, setb, matchb,
                             regionb, combine, genes, windowa, windowb)
@@ -226,17 +225,18 @@ def run(genome, debug, quiet, seta, setb, genes, matcha, regiona,
               help="Path to genomes and regulators")
 def genomes(path):
     """List available genomes in given directory"""
-    genomes = Genome
+    Genome.init(path)
+    _genomes = Genome
 
-    if genomes is None:
+    if _genomes is None:
         click.echo('No genomes available.')
         sys.exit()
 
     click.echo("Available genomes:")
     click.echo("------------------")
-    for species, species_dict in list(genomes.all().items()):
+    for species, species_dict in _genomes.all().items():
         click.echo("\t%s" % species)
-        for assembly, assembly_dict in list(species_dict['assemblies'].items()):
+        for assembly, assembly_dict in species_dict['assemblies'].items():
             click.echo("\t\t%s" % assembly)
             gffs = list(assembly_dict.items())
             gffs.sort(key=lambda x: x[0])
@@ -251,19 +251,20 @@ def genomes(path):
               help="Path to genomes and regulators")
 def regulators(path):
     """List available regulators in a given directory"""
-    regulator = Regulator.all()
-    if regulator is None:
+    Regulator.init(path)
+    _regulator = Regulator.all()
+    if _regulator is None:
         click.echo('No regulators available.')
         sys.exit()
 
     click.echo("Available regulators:")
     click.echo("---------------------")
-    for species, species_dict in list(regulator.items()):
+    for species, species_dict in _regulator.items():
         click.echo("\t%s" % species)
-        for assembly, assembly_dict in list(species_dict.items()):
+        for assembly, assembly_dict in species_dict.items():
             click.echo("\t\t%s" % assembly)
-            for regulator, regulator_dict in list(assembly_dict.items()):
-                click.echo("\t\t\t%s" % regulator)
+            for _regulator, regulator_dict in list(assembly_dict.items()):
+                click.echo("\t\t\t%s" % _regulator)
     sys.exit(0)
 
 
@@ -273,4 +274,4 @@ cli.add_command(regulators)
 cli.add_command(genomes)
 cli.add_command(run)
 if __name__ == '__main__':
-    cli("run hg19 -p /Volumes/prj/dorina2/".split())
+    cli("run hg19 -a all -p /Volumes/prj/dorina2/".split())
