@@ -274,4 +274,4 @@ cli.add_command(regulators)
 cli.add_command(genomes)
 cli.add_command(run)
 if __name__ == '__main__':
-    cli("run hg19 -a all -p /Volumes/prj/dorina2/".split())
+    cli()
