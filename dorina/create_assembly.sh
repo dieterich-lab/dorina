@@ -25,16 +25,15 @@ ASSEMBLY=${1:-hg38}
 
 mkdir ${ASSEMBLY}
 pushd ${ASSEMBLY} > /dev/null
+wget http://hgdownload.soe.ucsc.edu/admin/exe/macOSX.x86_64/genePredToGtf
+wget http://genes.mit.edu/burgelab/miso/scripts/gtf2gff3.pl
 
-mysql --host=genome-mysql.soe.ucsc.edu --user=genome \
--Ne "select a.name, a.chrom, a.strand, a.txStart, a.txEnd,\
-a.cdsStart, a.cdsEnd, a.exonCount, a.exonStarts, a.exonEnds,\
- 0 as score, b.geneSymbol from knownGene a join \
-kgXref b on a.name=b.kgID" ${ASSEMBLY} > ${ASSEMBLY}.genePred
-
-genePredToGtf file ${ASSEMBLY}.genePred ${ASSEMBLY}.knownGene.gtf -utr
-
-perl gtf2gff3 ${ASSEMBLY}.knownGene.gtf > ${ASSEMBLY}/${ASSEMBLY}.gff
+rsync -a -P rsync://hgdownload.soe.ucsc.edu/goldenPath/${ASSEMBLY}/database/refGene.txt.gz ${ASSEMBLY}.txt.gz
+gzip -d ${ASSEMBLY}.txt.gz
+cut -f 2- ${ASSEMBLY}.txt > ${ASSEMBLY}.input
+./genePredToGtf file ${ASSEMBLY}.input ${ASSEMBLY}.gtf
+perl gtf2gff3.pl ${ASSEMBLY}.gtf.sorted > ${ASSEMBLY}.gff
+bedtools sort -i ${ASSEMBLY}.gff > tmp && mv tmp ${ASSEMBLY}.gff
 
 grep gene ${ASSEMBLY}.gff > all.gff
 grep CDS ${ASSEMBLY}.gff > cds.gff
@@ -43,12 +42,10 @@ grep five_prime ${ASSEMBLY}.gff > 5_utr.gff
 grep exon ${ASSEMBLY}.gff > exon.gff
 
 bedtools subtract -s -a all.gff -b exon.gff |sed -e "s/\tgene\t/\tintron\t/" > intron.gff
+wget http://hgdownload.soe.ucsc.edu/goldenPath/${ASSEMBLY}/bigZips/${ASSEMBLY}.chrom.sizes
 
-mysql --user=genome --host=genome-mysql.cse.ucsc.edu -A -e "select chrom, size from ${ASSEMBLY}.chromInfo" > ${ASSEMBLY}.genome
-# http://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.chrom.sizes
+bedtools complement -i all.gff -g ${ASSEMBLY}.chrom.sizes > intergenic.bed
 
-bedtools complement -i all.gff -g ${ASSEMBLY}.genome > intergenic.bed
-
-rm ${ASSEMBLY}.genePred ${ASSEMBLY}.knownGene.gtf
+rm ${ASSEMBLY}.txt ${ASSEMBLY}.input ${ASSEMBLY}.gtf ${ASSEMBLY}.all
 popd > /dev/null
 
