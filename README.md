@@ -29,7 +29,9 @@ pip install .
 For doRiNA development, please use Python version > 3.4.
 
 Usage
-------
+-----
+
+<!--  make a table here -->
 
 Dorina requires the files to be setup locally. Let `/path/to/datasets/` be the the setup path. 
 `/path/to/datasets/` should contain :
@@ -39,6 +41,9 @@ Dorina requires the files to be setup locally. Let `/path/to/datasets/` be the t
 Both sub-directories have the same structure:
 - `/path/to/datasets/genomes/{organism}/{assembly}/`
 - `/path/to/datasets/regulators/{organism}/{assembly}/`
+
+
+
 
 Regulators can be obtained from (here)[http://dorina.mdc-berlin.de/regulators]. Each bed file should be accompanied with metadata file with the same name, but the `.json` extension:
 
@@ -57,8 +62,16 @@ dorina run 'hg19' --seta 'hsa-miR-1247|CLASH' -p /path/to/datasets/ > miR-1247.b
 To list the avaiable data sources, use:
 ```bash
 dorina genomes -p /path/to/datasets/ | less 
-dorina regulators -p /path/to/datasets/ | less 
+dorina regulators -p /path/to/datasets/ | less
 ```
+
+### Building an assembly
+
+Please see here
+
+<!-- http://genomewiki.ucsc.edu/index.php/Genes_in_gtf_or_gff_format#Convert_genePred_to_GTF_with_the_genePredToGtf_command_line_utility -->
+
+
 
 Supported dataset
 -----------------

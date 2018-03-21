@@ -12,6 +12,12 @@ from pandas import concat, read_table
 log = logging.getLogger(__name__)
 
 retrieve = RNASEQ_EBI()
+assembly_to_organism = {'ce6': 'caenorhabditis_elegans',
+                        'dm3': "drosophila_melanogaster",
+                        'hg19': 'homo_sapiens',
+                        'mm9': 'mus_musculus',
+                        'mm10': 'mus_musculus',
+                        'GRCh38': 'homo_sapiens'}
 
 
 def retrieve_study(assembly, condition=None):
@@ -35,12 +41,12 @@ def retrieve_study(assembly, condition=None):
 
     filtered_studies = retrieve.get_run_by_organism(
         organism=organism, condition=condition)
-    if condition and not filtered_studies:
-        log.error('No studies found with %s condition' % condition)
-        raise ValueError
     filtered_studies = [study for study in filtered_studies if
                         study['ASSEMBLY_USED'] == assembly and
                         study['STATUS'] == 'Complete']
+    if condition and not filtered_studies:
+        log.error('No studies found with %s condition' % condition)
+        raise ValueError
     studies_ids = [study['STUDY_ID'] for study in filtered_studies]
 
     studies = retrieve.get_studies_by_organism(organism)
@@ -64,8 +70,3 @@ def calculate_expressed_genes(data, fpkm_cutoff=1):
 
 if __name__ == "__main__":
     pass
-assembly_to_organism = {'ce6': 'caenorhabditis_elegans',
-                        'dm3': "drosophila_melanogaster",
-                        'hg19': 'homo_sapiens',
-                        'mm9': 'mus_musculus',
-                        'GRCh38': 'homo_sapiens'}

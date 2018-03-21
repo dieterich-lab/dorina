@@ -22,11 +22,13 @@ usage="USAGE:
     assembly : a valid UCSC assembly [default=hg38]"
 # default values
 ASSEMBLY=${1:-hg38}
+# add organism
+# add description json
 
 mkdir ${ASSEMBLY}
 pushd ${ASSEMBLY} > /dev/null
-wget http://hgdownload.soe.ucsc.edu/admin/exe/macOSX.x86_64/genePredToGtf --no-clobber
-wget http://genes.mit.edu/burgelab/miso/scripts/gtf2gff3.pl --no-clobber
+wget http://hgdownload.soe.ucsc.edu/admin/exe/macOSX.x86_64/genePredToGtf
+wget http://genes.mit.edu/burgelab/miso/scripts/gtf2gff3.pl
 
 rsync -a -P rsync://hgdownload.soe.ucsc.edu/goldenPath/${ASSEMBLY}/database/refGene.txt.gz ${ASSEMBLY}.txt.gz
 gzip -d ${ASSEMBLY}.txt.gz
@@ -42,7 +44,7 @@ grep five_prime ${ASSEMBLY}.gff > 5_utr.gff
 grep exon ${ASSEMBLY}.gff > exon.gff
 
 bedtools subtract -s -a all.gff -b exon.gff |sed -e "s/\tgene\t/\tintron\t/" > intron.gff
-wget http://hgdownload.soe.ucsc.edu/goldenPath/${ASSEMBLY}/bigZips/${ASSEMBLY}.chrom.sizes --no-clobber
+wget http://hgdownload.soe.ucsc.edu/goldenPath/${ASSEMBLY}/bigZips/${ASSEMBLY}.chrom.sizes
 sort -k1,1 -k2,2n  ${ASSEMBLY}.chrom.sizes > tmp &&  mv tmp ${ASSEMBLY}.chrom.sizes
 bedtools complement -i all.gff -g ${ASSEMBLY}.chrom.sizes > intergenic.bed
 

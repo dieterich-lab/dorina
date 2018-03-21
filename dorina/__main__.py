@@ -81,7 +81,7 @@ def common_params(func):
 
 @click.command()
 @common_params
-def create_assembly(release, organism, variation, regulation):
+def create_assembly_from_ensembl(release, organism, variation, regulation):
     """Retrieves the data files for a given Ensembl release version and
     organism """
     log.info('Retrieving gff files for {} {}'.format(release, organism))
@@ -268,7 +268,7 @@ def regulators(path):
     sys.exit(0)
 
 
-cli.add_command(create_assembly)
+cli.add_command(create_assembly_from_ensembl)
 cli.add_command(clear_assembly)
 cli.add_command(regulators)
 cli.add_command(genomes)
