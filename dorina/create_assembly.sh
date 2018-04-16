@@ -25,7 +25,11 @@ ASSEMBLY=${1:-hg38}
 
 mkdir ${ASSEMBLY}
 pushd ${ASSEMBLY} > /dev/null
-wget http://hgdownload.soe.ucsc.edu/admin/exe/macOSX.x86_64/genePredToGtf --no-clobber
+if [ "$(uname)" == "Darwin" ]; then
+    wget http://hgdownload.soe.ucsc.edu/admin/exe/macOSX.x86_64/genePredToGtf --no-clobber
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/genePredToGtf --no-clobber
+
 wget http://genes.mit.edu/burgelab/miso/scripts/gtf2gff3.pl --no-clobber
 
 rsync -a -P rsync://hgdownload.soe.ucsc.edu/goldenPath/${ASSEMBLY}/database/refGene.txt.gz ${ASSEMBLY}.txt.gz

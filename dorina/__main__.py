@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 import functools
 import logging
 import os
-import shutil
 import sys
 from io import open
 from subprocess import check_call, Popen, PIPE
@@ -80,91 +79,6 @@ def common_params(func):
 
 
 @click.command()
-@common_params
-def create_assembly_from_ensembl(release, organism, variation, regulation):
-    """Retrieves the data files for a given Ensembl release version and
-    organism """
-    log.info('Retrieving gff files for {} {}'.format(release, organism))
-    ftp = EnsemblFTP(organism=organism, release=release)
-    try:
-        assembly = ftp.assembly
-    except (IndexError,):
-        raise ValueError('No assembly found for {}.'.format(
-            organism))
-    base_path = config.get('DEFAULT', 'data_path')
-
-    gff = ftp.retrieve_full_gff()[0]
-
-    cl = r'$1 == "##sequence-region"{print $2 "\t" $4 - $3 + 1} !/^ *#/{exit;}'
-    log.debug('Creating {}.genome file'.format(assembly))
-    call_command(
-        ['awk', cl, gff.replace('.gz', '')],
-        "{}.genome".format(assembly),
-        cwd=os.path.join(base_path, assembly))
-
-    log.info('Data on {}.'.format(os.path.join(base_path, assembly)))
-
-    mapping = {"gene": "all",
-               "CDS": "cds",
-               "exon": "exon",
-               "three_prime": "3_utr",
-               "five_prime": "5_utr"}
-
-    for k, v in list(mapping.items()):
-        log.debug('Creating {}.gff3 file'.format(v))
-        call_command(
-            "grep {} {}".format(k, gff.replace('.gz', '')).split(),
-            stdout=v + ".gff3",
-            cwd=os.path.join(base_path, assembly))
-
-    log.debug('Creating intron.gff3 file')
-    bedtools_sub = call_command(
-        'bedtools subtract -s -a all.gff3 -b exon.gff3'.split(),
-        stdout=PIPE,
-        cwd=os.path.join(base_path, assembly))
-    call_command(
-        r"sed -e s/\tgene\t/\tintron\t/".split(' '),  # don't split on \t
-        stdout="intron.gff3",
-        stdin=bedtools_sub.stdout,
-        cwd=os.path.join(base_path, assembly))
-
-    call_command(
-        "bedtools sort -i all.gff3".split(),
-        stdout="all_sorted.gff3",
-        cwd=os.path.join(base_path, assembly))
-    os.remove(os.path.join(base_path, assembly, 'all.gff3'))
-
-    log.debug('Creating intergenic.bed file')
-    call_command(
-        "bedtools complement -i all_sorted.gff3 -g {}.genome".format(
-            assembly).split(),
-        stdout="intergenic.bed",
-        cwd=os.path.join(base_path, assembly))
-
-    os.remove(os.path.join(base_path, assembly, 'exon.gff3'))
-
-    if variation:
-        ftp.retrieve_full_vcf()
-
-    if regulation:
-        ftp.retrieve_from_regulation_by_experiment()
-
-    sys.exit(0)
-
-
-@click.command()
-@click.argument('assembly', type=str)
-def clear_assembly(assembly):
-    """Clear data files for a given Ensembl release version and organism """
-    click.confirm(
-        'Do you want to remove data file for the {} assembly?'.format(assembly),
-        abort=True)
-
-    base_path = config.get('DEFAULT', 'data_path')
-    shutil.rmtree(os.path.join(base_path, assembly))
-
-
-@click.command()
 @click.argument('genome')
 @click.option('-d', '--debug', is_flag=True,
               help="Set logging level to debug (more verbose)")
@@ -176,15 +90,16 @@ def clear_assembly(assembly):
               help="Second set of regulators to analyse")
 @click.option('--genes', multiple=True, default=['all'])
 @click.option('--matcha', required=True, type=click.Choice(['any', 'all']),
-              default='any', help="All or any regulators in set A must match")
+              show_default=True, default='any',
+              help="All or any regulators in set A must match")
 @click.option('--regiona', default='any', type=click.Choice(
     ['any', 'CDS', '3prime', '5prime', 'intron', 'intergenic']),
-              help="Region to match set A in")
+              help="Region to match set A in", show_default=True)
 @click.option('--matchb', type=click.Choice(['any', 'all']), default='any',
-              help="All or any regulators in set B must match")
+              help="All or any regulators in set B must match", show_default=True)
 @click.option('--regionb', default='any', type=click.Choice(
     ['any', 'CDS', '3prime', '5prime', 'intron', 'intergenic']),
-              help="Region to match set B in")
+              help="Region to match set B in", show_default=True)
 @click.option('-C', '--combine', default='or',
               type=click.Choice(['and', 'or', 'not', 'xor']),
               help="Set operation to combine set A and set B hits")
@@ -209,9 +124,6 @@ def run(genome, debug, quiet, seta, setb, genes, matcha, regiona,
     for x in Genome.all().values():
         for y in x['assemblies']:
             mapping[y] = x['id']
-
-    # if 'all' in seta:  # seta is a tuple
-    #     seta = Regulator.all()[mapping[genome]][genome].keys()
 
     result = dorina.analyse(genome, seta, matcha, regiona, setb, matchb,
                             regionb, combine, genes, windowa, windowb)
@@ -268,8 +180,6 @@ def regulators(path):
     sys.exit(0)
 
 
-cli.add_command(create_assembly_from_ensembl)
-cli.add_command(clear_assembly)
 cli.add_command(regulators)
 cli.add_command(genomes)
 cli.add_command(run)
