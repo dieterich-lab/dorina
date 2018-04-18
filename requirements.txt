@@ -6,3 +6,4 @@ pybedtools
 python-coveralls
 bioservices
 nose
+bokeh
