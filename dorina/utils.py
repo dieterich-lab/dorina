@@ -11,6 +11,10 @@ from io import open
 
 log = logging.getLogger(__name__)
 
+assembly_mapping = {
+    'hg38': 'h_sapiens',
+    'mm10': 'm_musculus'}
+
 
 class DorinaUtils(object):
     @staticmethod
@@ -94,7 +98,8 @@ def uncompress(filename):
     extension = filename.rsplit('.', 1)[-1]
     uncompressed_filename = filename.replace('.' + extension, '')
     if extension not in ('gz',):
-        raise NotImplementedError("Extension {} is unsupported.".format(extension))
+        raise NotImplementedError(
+            "Extension {} is unsupported.".format(extension))
 
     with gzip.open(filename) as _input, \
             open(uncompressed_filename, 'wb') as output:
@@ -102,3 +107,12 @@ def uncompress(filename):
         shutil.os.remove(filename)
 
     return uncompressed_filename
+
+
+def data_for_assembly(assembly, datadir, validate=False, *args):
+    from pathlib import Path
+    path = Path(datadir, assembly_mapping[assembly], assembly, *args)
+    if validate:
+        if not path.exists():
+            raise TypeError(str(path) + 'is not a valid file.')
+    return str(path)
