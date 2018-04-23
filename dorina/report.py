@@ -13,7 +13,7 @@ from bokeh.models import ColumnDataSource, LabelSet
 from bokeh.plotting import figure, show
 
 
-def load_gff_to_df(filename, filetype='bigNarrowPeak'):
+def load_gff_to_df(filename, filetype='bed6'):
     """
     Loads a clip data like file to pandas.Dataframe
 
@@ -25,15 +25,16 @@ def load_gff_to_df(filename, filetype='bigNarrowPeak'):
     ..note::
         see https://genome.ucsc.edu/goldenPath/help/bigNarrowPeak.html
     """
-    if filetype == 'bigNarrowPeak':
+    if filetype == 'bed6':
+        header = ('chr', 'start', 'end', 'name', 'score', 'strand')
+    elif filetype == 'bigNarrowPeak':
         header = ('chr', 'start', 'end', 'name', 'score', 'strand',
                   'signalValue', 'pValue', 'qValue', 'peak')
-        dtypes = {'end': int, 'start': int, 'score': float,
-                  'signalValue': float, 'pValue': float, 'qValue': 'float',
-                  'peak': float}
     else:
         raise NotImplementedError
-
+    dtypes = {'end': int, 'start': int, 'score': float,
+              'signalValue': float, 'pValue': float, 'qValue': 'float',
+              'peak': float}
     dtypes.update({k: str for k in header if k not in dtypes})
 
     return pd.read_table(filename, names=header, na_values='.', dtype=dtypes,
@@ -148,10 +149,10 @@ def count_by_feature(base_path):
     plot_vbar(counts, series=True, title='Peaks per feature')
 
 
-def counts_by_ensembl_transcript_biotype(target, base_path):
+def counts_by_ensembl_transcript_biotype(target, ensb_gtf):
     bed_obj = pybedtools.BedTool(target)
     ensb_gtf = pybedtools.BedTool(
-        '/Volumes/biodb/genomes/homo_sapiens/GRCh38_90/GRCh38.90.gtf') \
+         ensb_gtf) \
         .filter(filter_by_feature_type, 'gene') \
         .each(add_chr) \
         .saveas()
@@ -163,3 +164,14 @@ def counts_by_ensembl_transcript_biotype(target, base_path):
         except KeyError:
             pass
     plot_vbar(list(gene_type.values()), title='Peaks per gene biotype')
+
+
+if __name__ == '__main__':
+    ensembl_gtf = '/Volumes/biodb/genomes/homo_sapiens/GRCh38_90/GRCh38.90.gtf'
+    test = load_gff_to_df(
+        '/Volumes/prj/dorina2/regulators/h_sapiens/hg38/eClip_RBP_hg38.bed')
+    print(test.head())
+
+    # test = pybedtools.BedTool(
+    #     '/Volumes/prj/dorina2/regulators/h_sapiens/hg38/eClip_RBP_hg38.bed')
+    # print(test.to_dataframe().head())
