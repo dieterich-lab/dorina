@@ -2,10 +2,11 @@
 # -*- coding: utf-8
 """
 Created on 13:48 16/04/2018 2018 
-
+This module contains a tools for ploting regulator .bed files distributed with
+Dorina.
 """
 import multiprocessing
-import pathlib
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -15,7 +16,7 @@ from bokeh.models import ColumnDataSource, LabelSet
 from bokeh.plotting import figure, output_file
 
 
-def featuretype_filter(feature, featuretype):
+def filter_by_feature(feature, featuretype):
     if feature[2] == featuretype:
         return True
 
@@ -61,7 +62,7 @@ def plot_hist(values, logx=False, title=""):
     return p1
 
 
-def plot_vbar(values, title="counts", series=False, count=False, keys=None):
+def plot_vbar(values, title="counts", count=False, keys=None):
     if count:
         counts = pd.value_counts(values).to_frame(name='x_max')
     else:
@@ -107,9 +108,8 @@ def add_chr(entry):
 
 
 def plot_chr_counts(assembly, dataframe):
-    chromsizes = {k: pybedtools.chromsizes(assembly)[k][1] - \
-                     pybedtools.chromsizes(assembly)[k][0]
-                  for k in pybedtools.chromsizes(assembly)}
+    chr_size = pybedtools.chromsizes(assembly)
+    chromsizes = {k: chr_size[k][1] - chr_size[k][0] for k in chr_size}
 
     keys = dataframe['chrom'].value_counts(
     ).sort_values(ascending=True).index.tolist()
@@ -121,11 +121,11 @@ def plot_chr_counts(assembly, dataframe):
 
 
 def plot_feat_counts(bt, datadir, n_proc=1):
-    def count_reads_in_features_this(features):
-        return count_reads_in_features(bt, features_fn=features)
+    def count_reads_in_features_this(feat):
+        return count_reads_in_features(bt, features_fn=feat)
 
-    def total_feature_length(bed_Obj):
-        df = bed_Obj.to_dataframe()
+    def total_feature_length(bed_obj):
+        df = bed_obj.to_dataframe()
         return sum(df['end'] - df['start'])
 
     t_utr = pybedtools.BedTool(datadir + '/3_utr.gff')
@@ -149,32 +149,33 @@ def plot_feat_counts(bt, datadir, n_proc=1):
     features_length = pd.Series(features_length, feat_names)
 
     return gridplot([[
-        plot_vbar(counts_per_feature, series=True, title='Peaks per feature'),
-        plot_vbar(features_length, series=True, title='Feature length')]])
+        plot_vbar(counts_per_feature, title='Peaks per feature'),
+        plot_vbar(features_length, title='Feature length')]])
 
 
 def plot_biotype_counts(bt, ensembl_gtf):
     bt_gtf = pybedtools.BedTool(
         ensembl_gtf) \
-        .filter(featuretype_filter, 'gene') \
+        .filter(filter_by_feature, 'gene') \
         .each(add_chr) \
         .saveas()
     biotype_result = bt_gtf.intersect(bt, wa=True, wb=True)
 
-    gene_type = {}
-    for x in biotype_result:
-        try:
-            gene_type[x['gene_id']] = x['gene_biotype']
-        except KeyError:
-            pass
+    reg_type = {x['gene_id']: x.attrs['gene_biotype'] for x in biotype_result}
+    gene_type = {x['gene_id']: x.attrs['gene_biotype'] for x in bt_gtf}
+    reg_type = pd.Series(list(reg_type.values()))
 
-    return plot_vbar(list(gene_type.values()), title='Peaks per gene biotype')
+    return gridplot([[
+        plot_vbar(reg_type.value_counts(), keys=list(reg_type.unique()),
+                  title='Counts per biotype'),
+        plot_vbar(pd.Series(list(gene_type.values())), count=True,
+                  keys=list(reg_type.unique()), title='Total')]])
 
 
 def main(target, regulator=None, fasta=None, output_dir=None,
          assembly='hg38', datadir=None, n_proc=1, ensembl_gtf=None):
     if output_dir is None:
-        output_dir = pathlib.Path.cwd()
+        output_dir = Path.cwd()
 
     bt = pybedtools.BedTool(target)
     if regulator:
