@@ -68,22 +68,5 @@ def calculate_expressed_genes(data, fpkm_cutoff=1):
     return data.columns[data.max() > fpkm_cutoff].unique().tolist()
 
 
-def process_gtex_dataset(
-        rnaseq='GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_tpm.gct.gz',
-        sample='GTEx_v7_Annotations_SampleAttributesDS.txt'):
-    # cd /biodb/gtex/
-    #
-    #
-
-    samples = pd.read_table(sample)
-    gtex = pd.read_table(rnaseq, skiprows=2, compression='gzip', header=0, )
-    samples_mapping = dict(zip(samples['SAMPID'], samples['SMTS']))
-    gtex.set_index('Name', inplace=True)
-    gtex_t = gtex.T
-    description = gtex_t.loc['Description']
-    gtex_t = gtex_t.drop('Description')
-    gtex_t = gtex_t.rename(index=samples_mapping)
-
-
 if __name__ == "__main__":
     pass

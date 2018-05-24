@@ -13,7 +13,7 @@ import pandas as pd
 import pybedtools
 from bokeh.layouts import gridplot
 from bokeh.models import ColumnDataSource, LabelSet
-from bokeh.plotting import figure, output_file
+from bokeh.plotting import figure, output_file, save
 
 
 def filter_by_feature(feature, featuretype):
@@ -22,13 +22,12 @@ def filter_by_feature(feature, featuretype):
 
 
 def count_reads_in_features(bed, features_fn):
-    """
-    Callback function to count reads in features
-    """
+    """Counts reads in features, loaded as pytbedtools obj"""
     return bed.intersect(b=features_fn, stream=True).count()
 
 
 def get_sequences(bed, fasta):
+    """Extracts sequences from genomic regions as list"""
     bed.sequence(fi=fasta, name=True, s=True)
     with open(bed.seqfn) as f:
         seq = f.readlines()
@@ -37,6 +36,7 @@ def get_sequences(bed, fasta):
 
 
 def plot_hist(values, logx=False, title=""):
+    """Plot bokeh histograms"""
     t = "{2} distribution (μ={0:.2f}, σ={0:.2f})".format(
         np.mean(values), np.std(values), title)
     if logx:
@@ -77,7 +77,6 @@ def plot_vbar(values, title="counts", count=False, keys=None):
     group = counts.index.tolist()
     counts['x_min'] = 0
     counts = ColumnDataSource(counts)
-    #     hover = HoverTool(tooltips=[( 'Counts', '@x_max')])
     p = figure(title=title, y_range=group, x_range=(0, x_max * 1.1),
                plot_width=500, plot_height=750)
     p.hbar(y="index", left='x_min', right='x_max', height=0.5,
@@ -185,24 +184,19 @@ def main(target, regulator=None, fasta=None, output_dir=None,
     if fasta:
         df['seq'] = get_sequences(bt, fasta=fasta)
 
-    output_file(
-        str(output_dir / 'score_dist.png'),
-        plot_hist(df['score'], logx=True, title='Score'))
+    output_file(str(output_dir / 'score_dist.html'))
+    save(plot_hist(df['score'], logx=True, title='Score'))
 
-    output_file(
-        str(output_dir / 'peak_length.png'),
-        plot_hist(df['end'] - df['start'], title='Peak length'))
+    output_file(str(output_dir / 'peak_length.html'))
+    save(plot_hist(df['end'] - df['start'], title='Peak length'))
 
-    output_file(
-        str(output_dir / 'count_per_chr.png'),
-        plot_chr_counts(assembly, df))
+    output_file(str(output_dir / 'count_per_chr.html'))
+    save(plot_chr_counts(assembly, df))
 
-    output_file(
-        str(output_dir / 'count_per_feature.png'),
-        plot_feat_counts(bt, datadir, n_proc=n_proc))
+    output_file(str(output_dir / 'count_per_feature.html'))
+    save(plot_feat_counts(bt, datadir, n_proc=n_proc))
 
-    output_file(
-        str(output_dir / 'count_per_biotype.png'),
-        plot_biotype_counts(bt, ensembl_gtf))
+    output_file(str(output_dir / 'count_per_biotype.html'))
+    save(plot_biotype_counts(bt, ensembl_gtf))
 
     return 0
