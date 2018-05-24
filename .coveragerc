@@ -9,3 +9,5 @@ omit =
     */tests/*
     dorina/__main__.py
     dorina/ensembl.py
+    dorina/expression.py
+    dorina/report.py
