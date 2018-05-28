@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import logging
 import functools
 from os import path
-
+from six import string_types
 from pybedtools import BedTool
 
 from dorina.genome import Genome
@@ -45,6 +45,9 @@ class Dorina(object):
             else:
                 result = None
             return result
+
+        if isinstance(genes, string_types):
+            genes = list(genes)
 
         regulators_a = Regulator.from_names(set_a, assembly=genome)
         regulators_b = Regulator.from_names(set_b, assembly=genome)
