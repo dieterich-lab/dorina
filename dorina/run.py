@@ -12,7 +12,8 @@ from dorina.regulator import Regulator
 
 
 class Dorina(object):
-    def __init__(self, datadir):
+    def __init__(self, datadir, ext=None):
+        self.ext = ext or ''
         Genome.init(datadir)
         Regulator.init(datadir)
 
@@ -92,7 +93,8 @@ class Dorina(object):
         if region not in mapping:
             raise ValueError("Invalid region: %r" % region)
         else:
-            bed = BedTool(path.join(genome, "%s.gff" % mapping[region]))
+            bed = BedTool(
+                path.join(genome, self.ext, "%s.gff" % mapping[region]))
 
         # Optionally, filter by gene.
         if genes is None or 'all' in genes:

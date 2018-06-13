@@ -11,13 +11,12 @@ import logging
 import os
 import sys
 from io import open
-from subprocess import check_call, Popen, PIPE
+from subprocess import check_call, Popen
 
 import click
 
 from dorina import __version__, run as run_dorina
 from dorina.config import config
-from dorina.ensembl import EnsemblFTP
 from dorina.genome import Genome
 from dorina.regulator import Regulator
 
@@ -124,7 +123,7 @@ def run(genome, debug, quiet, seta, setb, genes, matcha, regiona,
     for x in Genome.all().values():
         for y in x['assemblies']:
             mapping[y] = x['id']
-
+    click.echo('Running dorina with ')
     result = dorina.analyse(genome, seta, matcha, regiona, setb, matchb,
                             regionb, combine, genes, windowa, windowb)
     click.echo(result)

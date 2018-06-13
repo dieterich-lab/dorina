@@ -217,3 +217,17 @@ chr1	doRiNA2	gene	1351	3360	.	+	.	ID=gene01.02	chr1	1350	1360	PICTAR#fake01*fake
             lambda x: x.name == "gene01.02").saveas()
         got = self.run._get_genome_bedtool('hg19', 'any', genes=['gene01.02'])
         self.assertEqual(expected, got)
+
+    def test_error_for_genome_ext(self):
+        "Test tissue extension for pre calculated genesets"
+        with self.assertRaises(ValueError):
+            run.Dorina(self.datadir, ext='Error')._get_genome_bedtool(
+                genome_name='hg19', region='any')
+            run.Dorina(self.datadir, ext='')._get_genome_bedtool(
+                genome_name='hg19', region='any')
+
+    def test_genome_ext_heart(self):
+        run.Dorina(self.datadir, ext='heart')._get_genome_bedtool(
+            genome_name='hg19', region='any')
+
+
