@@ -123,7 +123,7 @@ def run(genome, debug, quiet, seta, setb, genes, matcha, regiona,
     for x in Genome.all().values():
         for y in x['assemblies']:
             mapping[y] = x['id']
-    click.echo('Running dorina with ')
+    click.echo('Running DORINA')
     result = dorina.analyse(genome, seta, matcha, regiona, setb, matchb,
                             regionb, combine, genes, windowa, windowb)
     click.echo(result)
