@@ -39,6 +39,7 @@ cut -f 2- ${ASSEMBLY}.txt > ${ASSEMBLY}.input
 perl gtf2gff3.pl ${ASSEMBLY}.gtf > ${ASSEMBLY}.gff
 bedtools sort -i ${ASSEMBLY}.gff > tmp && mv tmp ${ASSEMBLY}.gff
 
+
 grep gene ${ASSEMBLY}.gff > all.gff
 grep CDS ${ASSEMBLY}.gff > cds.gff
 grep three_prime ${ASSEMBLY}.gff > 3_utr.gff
@@ -53,3 +54,6 @@ bedtools complement -i all.gff -g ${ASSEMBLY}.chrom.sizes > intergenic.bed
 rm ${ASSEMBLY}.txt ${ASSEMBLY}.input ${ASSEMBLY}.gtf ${ASSEMBLY}.all
 popd > /dev/null
 
+#wget ftp://ftp.ensembl.org/pub/release-92/regulation/homo_sapiens/homo_sapiens.GRCh38.Regulatory_Build.regulatory_features.20161111.gff.gz
+#gzip -d homo_sapiens.GRCh38.Regulatory_Build.regulatory_features.20161111.gff.gz
+#grep 'feature_type=Promoter' homo_sapiens.GRCh38.Regulatory_Build.regulatory_features.20161111.gff > promoters.gff

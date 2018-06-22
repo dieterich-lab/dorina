@@ -1,27 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 from __future__ import unicode_literals
-
-import functools
 import logging
+import functools
 from os import path
 
 from pybedtools import BedTool
-from six import string_types
 
 from dorina.genome import Genome
 from dorina.regulator import Regulator
 
 
 class Dorina(object):
-    def __init__(self, datadir, ext=None):
-        self.ext = ext or ''
+    def __init__(self, datadir):
         Genome.init(datadir)
         Regulator.init(datadir)
 
-    def analyse(self, genome, set_a, match_a='any', region_a='any', set_b=None,
-                match_b='any', region_b='any', combine='or', genes=None,
-                window_a=-1, window_b=-1, *args, **kwargs):
+    def analyse(self, genome,
+                set_a, match_a='any', region_a='any',
+                set_b=None, match_b='any', region_b='any',
+                combine='or', genes=None,
+                window_a=-1,
+                window_b=-1):
         """Run doRiNA analysis"""
         logging.debug("analyse(%r, %r(%s) <-'%s'-> %r(%s))" % (
             genome, set_a, match_a, combine, set_b, match_b))
@@ -38,18 +38,13 @@ class Dorina(object):
                     genome_bed = self._add_slop(genome_bed, genome, window)
 
             if match == 'any':
-                result = genome_bed.intersect(Regulator.merge(_regulators),
-                                              wa=True, u=True)
+                result = genome_bed.intersect(Regulator.merge(_regulators), wa=True, u=True)
             elif match == 'all':
-                result = functools.reduce(
-                    lambda acc, x: acc.intersect(x, wa=True, u=True),
-                    [genome_bed] + _regulators)
+                result = functools.reduce(lambda acc, x: acc.intersect(x, wa=True, u=True),
+                                [genome_bed] + _regulators)
             else:
                 result = None
             return result
-
-        if isinstance(genes, string_types):
-            genes = list(genes)
 
         regulators_a = Regulator.from_names(set_a, assembly=genome)
         regulators_b = Regulator.from_names(set_b, assembly=genome)
@@ -94,8 +89,7 @@ class Dorina(object):
         if region not in mapping:
             raise ValueError("Invalid region: %r" % region)
         else:
-            bed = BedTool(
-                path.join(genome, self.ext, "%s.gff" % mapping[region]))
+            bed = BedTool(path.join(genome, "%s.gff" % mapping[region]))
 
         # Optionally, filter by gene.
         if genes is None or 'all' in genes:
